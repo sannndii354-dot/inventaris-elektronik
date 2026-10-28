@@ -547,6 +547,15 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
         </div>
         <div class="note" id="dataInfo"></div>
       </div>
+      <div class="card set" id="gdCard" hidden>
+        <h3>Auto backup Google Drive</h3>
+        <p class="d" id="gdDesc"></p>
+        <div class="btn-col" id="gdActions">
+          <button class="btn primary" id="gdBackupBtn"><span data-i="cloud"></span><span class="t">Backup ke Drive sekarang</span></button>
+          <a class="btn" id="gdFolderBtn" target="_blank" rel="noopener"><span data-i="link"></span>Buka folder backup di Drive</a>
+        </div>
+        <div class="note" id="gdInfo" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 </main>
@@ -689,7 +698,8 @@ const ICONS = {
   alert:'<path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
   layers:'<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/>',
   empty:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
-  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>'
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  cloud:'<path d="M7 18a5 5 0 0 1-.5-9.97A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/><path d="M12 11v6m0-6-2.5 2.5M12 11l2.5 2.5"/>'
 };
 const PAGE_INFO = {
   items: ['Barang', 'Semua komponen & mikrokontroler yang Anda simpan'],
@@ -835,6 +845,7 @@ async function boot() {
       const data = await fetchState();
       mode = 'server'; state = normalize(data); serverRev = data.rev || 0; synced = snap(state);
       setInterval(checkRemote, 10000);
+      loadGdrive(); setInterval(loadGdrive, 5 * 60000);
       document.addEventListener('visibilitychange', checkRemote);
       window.addEventListener('beforeunload', (e) => { if (syncing || pendingChanges().n) { e.preventDefault(); e.returnValue = ''; } });
       setSync('ok');
@@ -903,7 +914,7 @@ const exportItems = () => ui.scope === 'all' ? [...state.items].sort((a,b) => a.
    ========================================================= */
 function render() {
   renderStats(); renderFilters(); renderChips(); renderItems(); renderBackupBar();
-  renderLogs(); renderProjects(); renderSettings(); renderDatalists();
+  renderLogs(); renderProjects(); renderSettings(); renderGdrive(); renderDatalists();
   $('#tcItems').textContent = state.items.length;
   $('#tcLogs').textContent = state.logs.length;
   $('#tcProj').textContent = allProjects().length;
@@ -1007,12 +1018,13 @@ function renderBackupBar() {
   const bar = $('#backupBar');
   if (!state.items.length) { bar.style.display = 'none'; return; }
   bar.style.display = '';
-  const last = state.meta.lastBackup;
+  const driveOn = gdrive?.enabled && !gdrive.error;
+  const last = [state.meta.lastBackup, gdrive?.lastSuccess].filter(Boolean).sort().pop() || null;
   const days = last ? Math.floor((Date.now() - new Date(last)) / 864e5) : null;
   const stale = days === null || days >= 14;
   bar.classList.toggle('stale', stale);
   bar.innerHTML = `<span>${stale ? icon('alert') : ''} ${last ? `Backup terakhir: ${fmtDateTime(last)}${days ? ` (${days} hari lalu)` : ''}` : 'Belum pernah backup.'}
-    ${mode === 'server' ? 'Data tersimpan di server dan dipakai bersama.' : storageOk ? 'Data tersimpan otomatis di browser ini.' : '<b>Penyimpanan browser tidak tersedia — data akan hilang saat halaman ditutup!</b>'}</span>
+    ${mode === 'server' ? `Data tersimpan di server dan dipakai bersama.${driveOn ? ' Auto backup Google Drive aktif.' : gdrive?.error ? ' <b>Auto backup Google Drive gagal, cek Pengaturan.</b>' : ''}` : storageOk ? 'Data tersimpan otomatis di browser ini.' : '<b>Penyimpanan browser tidak tersedia — data akan hilang saat halaman ditutup!</b>'}</span>
     <button class="btn sm" data-act="backup">Backup sekarang (.json)</button>`;
 }
 
@@ -1092,8 +1104,62 @@ function renderSettings() {
     ? 'Data tersimpan di server dan dipakai bersama semua pengguna. Backup JSON tetap disarankan secara berkala.'
     : 'Data tersimpan di browser ini. Buat backup berkala supaya aman jika cache browser dihapus.';
   $('#dataInfo').innerHTML = `${state.items.length} barang · ${state.logs.length} riwayat · ${where}.<br>
-    Backup terakhir: ${state.meta.lastBackup ? fmtDateTime(state.meta.lastBackup) : 'belum pernah'}.<br>
+    Backup JSON manual terakhir: ${state.meta.lastBackup ? fmtDateTime(state.meta.lastBackup) : 'belum pernah'}.<br>
     Tip: impor Excel memperbarui barang dengan <b>Kode</b> yang sama dan menambah barang baru untuk kode lain.`;
+}
+
+/* ---------- auto backup Google Drive (dijalankan oleh server) ---------- */
+let gdrive = null;
+async function loadGdrive() {
+  if (mode !== 'server') return;
+  try {
+    const r = await fetch('api/gdrive', {cache:'no-store'});
+    gdrive = r.ok ? await r.json() : null;
+  } catch { gdrive = null; }
+  renderGdrive(); renderBackupBar();
+}
+function renderGdrive() {
+  const card = $('#gdCard');
+  card.hidden = mode !== 'server' || !gdrive;
+  if (card.hidden) return;
+  $('#gdActions').hidden = !gdrive.enabled;
+  if (!gdrive.enabled) {
+    $('#gdDesc').textContent = 'Belum aktif. Isi GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET, dan GDRIVE_REFRESH_TOKEN di server, lalu jalankan ulang aplikasi. Langkahnya ada di README bagian "Auto backup ke Google Drive".';
+    $('#gdInfo').hidden = true;
+    return;
+  }
+  $('#gdDesc').textContent = `Server mengunggah backup JSON ke Google Drive tiap ${gdrive.intervalHours} jam bila ada perubahan data, dan menyimpan ${gdrive.keep} file terakhir. File bisa dipulihkan lewat "Pulihkan dari backup…".`;
+  const folder = $('#gdFolderBtn');
+  folder.hidden = !gdrive.folderUrl;
+  if (gdrive.folderUrl) folder.href = gdrive.folderUrl;
+  $('#gdInfo').hidden = false;
+  $('#gdInfo').innerHTML = [
+    gdrive.error ? `<b style="color:var(--danger)">Backup terakhir gagal: ${esc(gdrive.error)}</b>` : '',
+    gdrive.account ? `Akun Google Drive: <b>${esc(gdrive.account)}</b>` : '',
+    `Backup sukses terakhir: ${gdrive.lastSuccess ? fmtDateTime(gdrive.lastSuccess) : 'belum pernah'}`,
+    gdrive.lastFile ? `File: ${gdrive.lastLink ? `<a href="${esc(gdrive.lastLink)}" target="_blank" rel="noopener">${esc(gdrive.lastFile)}</a>` : esc(gdrive.lastFile)}` : '',
+    gdrive.lastCheck ? `Dicek terakhir: ${fmtDateTime(gdrive.lastCheck)}` : ''
+  ].filter(Boolean).join('<br>');
+}
+async function gdriveBackupNow() {
+  const btn = $('#gdBackupBtn');
+  if (btn.disabled) return;
+  if (pendingChanges().n) await syncNow();
+  btn.disabled = true; btn.setAttribute('aria-busy', 'true');
+  $('#gdBackupBtn .t').textContent = 'Mengunggah ke Drive…';
+  try {
+    const r = await fetch('api/gdrive/backup', {method:'POST'});
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
+    gdrive = data; toast('Backup tersimpan di Google Drive');
+  } catch (e) {
+    toast('Backup ke Google Drive gagal: ' + e.message, 'danger');
+    await loadGdrive();
+  } finally {
+    btn.disabled = false; btn.removeAttribute('aria-busy');
+    $('#gdBackupBtn .t').textContent = 'Backup ke Drive sekarang';
+    renderGdrive(); renderBackupBar();
+  }
 }
 
 function renderDatalists() {
@@ -1730,6 +1796,7 @@ function init() {
   $('#addProjBtn2').onclick = () => addEntry('proj', '#newProj');
   [['#newCat','#addCatBtn'],['#newLoc','#addLocBtn'],['#newProj','#addProjBtn2']].forEach(([i, b]) => $(i).onkeydown = (e) => { if (e.key === 'Enter') $(b).click(); });
   $('#backupBtn').onclick = backupJson;
+  $('#gdBackupBtn').onclick = gdriveBackupNow;
   $('#restoreBtn').onclick = () => $('#fileJson').click();
   $('#importXlsBtn').onclick = () => $('#fileXls').click();
   $('#templateBtn').onclick = downloadTemplate;

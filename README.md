@@ -12,6 +12,7 @@ Aplikasi web untuk mencatat komponen elektronik dan mikrokontroler: stok, lokasi
 - Pencarian, filter (kategori, lokasi, status, proyek), dan pengurutan
 - Ekspor **Excel** (inventaris, perlu restock, ringkasan, riwayat), **PDF** (laporan + daftar belanja), **Word (.docx)**
 - Impor dari Excel, template Excel, backup/pulihkan JSON
+- Auto backup ke Google Drive (opsional, dijalankan oleh server)
 - Data bersama di server (SQLite), bisa dipakai beberapa orang/perangkat sekaligus
 - Mode gelap, tampilan HP
 
@@ -46,7 +47,7 @@ Butuh **Node.js 22.13 atau lebih baru** (memakai modul bawaan `node:sqlite`, tan
 APP_PASSWORD=rahasia PORT=3000 npm start
 ```
 
-Untuk berjalan terus di latar belakang, pakai systemd, pm2, atau sejenisnya. Data tersimpan di folder `data/` (bisa diubah lewat `DATA_DIR`).
+`npm start` otomatis membaca file `.env` bila ada. Untuk berjalan terus di latar belakang, pakai systemd, pm2, atau sejenisnya. Data tersimpan di folder `data/` (bisa diubah lewat `DATA_DIR`).
 
 ## Konfigurasi
 
@@ -94,6 +95,51 @@ Aplikasi juga bisa dipasang di sub-path (mis. `https://domain.com/inventaris/`) 
   docker compose cp inventaris:/data/backup.db ./backup-$(date +%F).db
   ```
 
+## Auto backup ke Google Drive
+
+Server bisa mengunggah backup JSON ke Google Drive secara otomatis (default tiap 24 jam, hanya bila data berubah) dan menyimpan 30 file terakhir; file yang lebih lama dipindah ke Sampah Drive. File backup memakai format yang sama dengan **Backup lengkap (.json)**, jadi bisa dipulihkan lewat **Pengaturan & Data → Pulihkan dari backup…**. Status dan tombol **Backup ke Drive sekarang** ada di halaman Pengaturan.
+
+Aplikasi hanya meminta izin `drive.file`: ia hanya bisa melihat file dan folder yang dibuatnya sendiri, bukan isi Drive lainnya.
+
+### 1. Buat OAuth client di Google Cloud (sekali saja)
+
+1. Buka [console.cloud.google.com](https://console.cloud.google.com/), buat project baru (mis. `Inventaris Backup`).
+2. **APIs & Services → Library**, cari **Google Drive API**, klik **Enable**.
+3. **APIs & Services → OAuth consent screen** (Google Auth Platform): pilih **External**, isi nama aplikasi dan email. Di **Audience**, klik **Publish app** agar statusnya **In production**.
+   Jika dibiarkan **Testing**, token kedaluwarsa setelah 7 hari dan backup akan berhenti. Scope `drive.file` tidak perlu verifikasi Google.
+4. **Clients → Create client**, tipe **Desktop app**. Catat **Client ID** dan **Client secret**.
+
+### 2. Ambil refresh token
+
+Di komputer yang punya browser (bisa laptop Anda, tidak harus server), di folder project:
+
+```bash
+node scripts/gdrive-auth.js CLIENT_ID CLIENT_SECRET email-tujuan@gmail.com
+```
+
+Argumen ketiga (opsional) adalah akun Google tujuan backup; akun itu dipilihkan otomatis di halaman login. Buka link yang muncul, pastikan yang login adalah akun tersebut, lalu izinkan. Akun yang terhubung ditampilkan di kartu **Auto backup Google Drive** di Pengaturan. Terminal akan menampilkan tiga baris `GDRIVE_...`.
+
+### 3. Pasang di server
+
+Tempel ketiga baris itu ke `.env` di server, lalu jalankan ulang:
+
+```bash
+docker compose up -d
+```
+
+Log server akan menampilkan `Auto backup Google Drive aktif`. Folder **Inventaris Elektronik Backup** dibuat otomatis di Drive saat backup pertama (sekitar 30 detik setelah server menyala).
+
+| Variabel | Default | Keterangan |
+|---|---|---|
+| `GDRIVE_CLIENT_ID` | *(kosong)* | Client ID OAuth (tipe Desktop app) |
+| `GDRIVE_CLIENT_SECRET` | *(kosong)* | Client secret OAuth |
+| `GDRIVE_REFRESH_TOKEN` | *(kosong)* | Hasil `scripts/gdrive-auth.js` |
+| `GDRIVE_FOLDER_NAME` | `Inventaris Elektronik Backup` | Nama folder backup di Drive |
+| `GDRIVE_BACKUP_HOURS` | `24` | Jarak antar backup (jam) |
+| `GDRIVE_KEEP` | `30` | Jumlah file backup yang disimpan |
+
+Jika backup gagal (mis. izin dicabut di akun Google), pesan error tampil di Pengaturan dan di bar backup halaman Barang; server mencoba lagi tiap jam. Ulangi langkah 2 untuk membuat token baru.
+
 ## Tanpa server (mode lokal)
 
 `public/index.html` juga bisa langsung dibuka di browser (klik dua kali) atau di-hosting statis (GitHub Pages, Netlify, dsb.). Dalam mode ini data tersimpan di browser masing-masing, bukan di server. Penanda di pojok kanan atas menunjukkan mode yang aktif: **Lokal** atau **Tersimpan di server**.
@@ -108,5 +154,7 @@ Fitur ekspor memuat library (SheetJS, jsPDF, docx) dari CDN, jadi browser penggu
 | `GET` | `/api/state` | Seluruh data |
 | `GET` | `/api/rev` | Nomor revisi data terbaru |
 | `POST` | `/api/sync` | Kirim perubahan (`items`/`logs`: `upsert` & `remove`, `settings`) |
+| `GET` | `/api/gdrive` | Status auto backup Google Drive |
+| `POST` | `/api/gdrive/backup` | Jalankan backup ke Google Drive sekarang |
 
 Perubahan dari beberapa pengguna digabung per barang; jika dua orang mengubah barang yang **sama** pada saat bersamaan, perubahan terakhir yang dipakai. Halaman otomatis memuat perubahan dari pengguna lain setiap 10 detik.
