@@ -20,7 +20,7 @@ Aplikasi web untuk mencatat komponen elektronik dan mikrokontroler: stok, lokasi
 Butuh Docker + Docker Compose di server.
 
 ```bash
-git clone https://github.com/sannndii354-dot/inventaris-elektronik.git
+git clone https://github.com/electrical-embedded/inventaris-elektronik.git
 cd inventaris-elektronik
 cp .env.example .env
 nano .env            # isi APP_PASSWORD
