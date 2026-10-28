@@ -2,290 +2,462 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inventaris Elektronik</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' rx='2' fill='%230f766e'/%3E%3Cpath d='M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4' stroke='%230f766e' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' rx='2' fill='%238b1e2d'/%3E%3Cpath d='M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4' stroke='%23121213' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js" defer></script>
 <style>
+/* Konsep dashboard gelap (tata letak referensi "Craveat") dengan palet merah maroon, abu gelap, dan hitam: bingkai membulat di atas latar ungu, sidebar + header gelap,
+   kartu ungu keabu-abuan, ikon dalam lingkaran ungu, header tabel ungu. Aturan aksesibilitas ui-ux-pro-max tetap dipakai. */
 :root{
-  --bg:#f4f6f8; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --border-strong:#c5ccd5;
-  --text:#18202a; --muted:#5d6978; --faint:#8a95a3;
-  --accent:#0f766e; --accent-hover:#0d625b; --accent-ink:#ffffff; --accent-soft:#e3f3f1;
-  --ok:#15803d; --ok-soft:#e6f4ea; --warn:#a85a07; --warn-soft:#fdf1df; --danger:#b42318; --danger-soft:#fdeceb;
-  --info:#1d4ed8; --info-soft:#e8eefc;
-  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
-  --shadow-lg:0 12px 32px rgba(16,24,40,.18);
-  --radius:10px;
-  --mono:ui-monospace,"Cascadia Mono","Consolas","SFMono-Regular",monospace;
+  --frame:#d4d4d6; --side:#ffffff; --bg:#f2f2f3; --surface:#ffffff; --surface-2:#ececee; --surface-3:#dcdcdf; --thead:#ead3d6;
+  --border:#e2e2e5; --border-strong:#c4c4c9;
+  --text:#141416; --muted:#55555b; --faint:#6a6a70;
+  --nav-active:#f3e3e5; --nav-text:#2b2b2e;
+  --primary:#7a1626; --primary-hover:#5e101c; --on-primary:#ffffff;
+  --violet:#9b1c2e; --on-violet:#ffffff; --violet-ring:#f1d0d5; --pink:#c2253a; --pink-ring:#f8d6db;
+  --ok:#15803d; --ok-soft:#dcfce7; --warn:#b45309; --warn-soft:#fef3c7; --danger:#b91c1c; --danger-soft:#fee2e2;
+  --info:#3f3f46; --info-soft:#e4e4e7;
+  --focus:#7a1626;
+  --shadow-lg:0 18px 44px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.06);
+  --r-lg:12px; --r:8px; --r-sm:6px;
+  --sans:"Roboto","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --dur:160ms; --ease:cubic-bezier(.2,0,0,1);
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0f1419; --surface:#171d24; --surface-2:#1e262f; --border:#2a333e; --border-strong:#3a4552;
-    --text:#e6ebf0; --muted:#9aa6b4; --faint:#6d7987;
-    --accent:#2dd4bf; --accent-hover:#5eead4; --accent-ink:#06201d; --accent-soft:#12332f;
-    --ok:#4ade80; --ok-soft:#14301f; --warn:#fbbf24; --warn-soft:#3a2c0e; --danger:#f87171; --danger-soft:#3b1717;
-    --info:#93b4fd; --info-soft:#1a2540;
-    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+    --frame:#2b2b2e; --side:#121213; --bg:#0a0a0a; --surface:#1c1c1e; --surface-2:#262628; --surface-3:#333336; --thead:#5c1a22;
+    --border:#2a2a2d; --border-strong:#46464a;
+    --text:#f2f2f2; --muted:#b3b3b8; --faint:#9a9aa0;
+    --nav-active:#3b1219; --nav-text:#e0e0e0;
+    --primary:#8b1e2d; --primary-hover:#a3263a; --on-primary:#ffffff;
+    --violet:#c23a4c; --on-violet:#ffffff; --violet-ring:#4a1a22; --pink:#e5484d; --pink-ring:#4d1f22;
+    --ok:#4ade80; --ok-soft:rgba(74,222,128,.13); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.13); --danger:#f87171; --danger-soft:rgba(248,113,113,.14);
+    --info:#d4d4d8; --info-soft:rgba(212,212,216,.12);
+    --focus:#e8707f;
+    --shadow-lg:0 18px 44px rgba(0,0,0,.7);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0f1419; --surface:#171d24; --surface-2:#1e262f; --border:#2a333e; --border-strong:#3a4552;
-  --text:#e6ebf0; --muted:#9aa6b4; --faint:#6d7987;
-  --accent:#2dd4bf; --accent-hover:#5eead4; --accent-ink:#06201d; --accent-soft:#12332f;
-  --ok:#4ade80; --ok-soft:#14301f; --warn:#fbbf24; --warn-soft:#3a2c0e; --danger:#f87171; --danger-soft:#3b1717;
-  --info:#93b4fd; --info-soft:#1a2540;
-  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+  --frame:#2b2b2e; --side:#121213; --bg:#0a0a0a; --surface:#1c1c1e; --surface-2:#262628; --surface-3:#333336; --thead:#5c1a22;
+  --border:#2a2a2d; --border-strong:#46464a;
+  --text:#f2f2f2; --muted:#b3b3b8; --faint:#9a9aa0;
+  --nav-active:#3b1219; --nav-text:#e0e0e0;
+  --primary:#8b1e2d; --primary-hover:#a3263a; --on-primary:#ffffff;
+  --violet:#c23a4c; --on-violet:#ffffff; --violet-ring:#4a1a22; --pink:#e5484d; --pink-ring:#4d1f22;
+  --ok:#4ade80; --ok-soft:rgba(74,222,128,.13); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.13); --danger:#f87171; --danger-soft:rgba(248,113,113,.14);
+  --info:#d4d4d8; --info-soft:rgba(212,212,216,.12);
+  --focus:#e8707f;
+  --shadow-lg:0 18px 44px rgba(0,0,0,.7);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--accent)}
+body{background:var(--frame);color:var(--text);font:14.5px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--info);text-underline-offset:2px}
 button,input,select,textarea{font:inherit;color:inherit}
-svg{width:16px;height:16px;flex:none}
+button{cursor:pointer}
+svg{width:18px;height:18px;flex:none}
+.mono{font-variant-numeric:tabular-nums}
+.sub{font-size:12.5px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
-/* ---------- layout ---------- */
-.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
-header.top{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
-.top-inner{display:flex;align-items:center;gap:12px;height:60px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:16px;letter-spacing:-.01em;margin-right:auto;min-width:0}
-.brand .logo{width:32px;height:32px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+/* ---------- bingkai: sidebar + header + konten ---------- */
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);margin:24px;min-height:calc(100vh - 48px);background:var(--bg);border-radius:18px;overflow:clip;align-items:start}
+.side{position:sticky;top:0;height:calc(100vh - 48px);min-height:520px;background:var(--side);display:flex;flex-direction:column;padding:0 0 18px}
+.brand{display:flex;align-items:center;gap:12px;height:76px;padding:0 24px;flex:none}
+.brand .logo{width:34px;height:34px;border-radius:var(--r);background:var(--violet);color:var(--on-violet);display:grid;place-items:center;flex:none}
 .brand .logo svg{width:20px;height:20px}
-.brand small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
-.brand-text{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sync{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid var(--border);border-radius:99px;white-space:nowrap}
-.sync .dot{background:var(--faint)}
-.sync.ok .dot{background:var(--ok)}
-.sync.saving .dot{background:var(--warn)}
-.sync.error{color:var(--danger);border-color:var(--danger)}
-.sync.error .dot{background:var(--danger)}
-nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);background:var(--surface)}
-nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
-.tab{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-weight:550;white-space:nowrap;display:flex;align-items:center;gap:6px}
-.tab:hover{color:var(--text)}
-.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
-.tab .count{font-size:11px;background:var(--surface-2);color:var(--muted);padding:1px 7px;border-radius:99px}
-main{padding:20px 0 60px}
-section.view{display:none}
-section.view.active{display:block}
+.brand-text{font-weight:700;font-size:16px;font-style:italic;letter-spacing:.02em;line-height:1.2;min-width:0}
+.brand small{display:block;font-weight:400;font-style:normal;font-size:11.5px;letter-spacing:0;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:22px}
+.tab{position:relative;display:flex;align-items:center;gap:14px;min-height:46px;padding:0 24px;border:0;background:none;color:var(--nav-text);font-size:14px;font-weight:400;text-align:left;transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
+.tab:hover{background:color-mix(in srgb,var(--nav-active) 55%,transparent);color:var(--text)}
+.tab[aria-selected="true"]{background:var(--nav-active);color:var(--text);font-weight:500}
+.tab[aria-selected="true"]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--violet)}
+.tab .count{margin-left:auto;font-size:11.5px;font-weight:500;padding:0 7px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.tab[aria-selected="true"] .count{background:var(--violet);color:var(--on-violet)}
+.restock-card{margin:auto 16px 0;background:var(--surface-2);border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.rc-k{font-size:12.5px;color:var(--muted)}
+.rc-v{font-size:26px;font-weight:700;line-height:1.2;margin-bottom:12px;display:flex;align-items:baseline;gap:6px}
+.rc-v small{font-size:12.5px;font-weight:400;color:var(--muted)}
+.rc-v.ok{font-size:15px;font-weight:500;color:var(--ok);margin:2px 0 0}
+.restock-card .btn{width:100%;height:38px}
+.restock-card .btn svg{width:16px;height:16px}
+.theme-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;font-size:12.5px;color:var(--muted)}
+.switch{position:relative;width:56px;height:30px;flex:none;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface-2);padding:0}
+.switch .knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--violet);color:var(--on-violet);display:grid;place-items:center;transition:transform var(--dur) var(--ease)}
+.switch .knob svg{width:13px;height:13px}
+.switch[aria-checked="true"] .knob{transform:translateX(26px)}
 
-/* ---------- buttons ---------- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface);cursor:pointer;font-weight:550;white-space:nowrap;transition:background .12s,border-color .12s}
+.content{min-width:0;display:flex;flex-direction:column}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px;padding:10px 28px;background:var(--side);flex-wrap:wrap}
+.title{min-width:0;display:flex;align-items:center;gap:12px}
+.title-ic{width:22px;height:22px;display:grid;place-items:center;color:var(--text)}
+.title-ic svg{width:20px;height:20px}
+.title h1{margin:0;font-size:19px;font-weight:600;line-height:1.25}
+.title p{margin:1px 0 0;color:var(--muted);font-size:12.5px}
+.top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sync{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);height:38px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);white-space:nowrap}
+.sync .dot{--c:var(--faint)}
+.sync.ok .dot{--c:var(--ok)}
+.sync.saving .dot{--c:var(--warn)}
+.sync.error{color:var(--danger);border-color:var(--danger)}
+.sync.error .dot{--c:var(--danger)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:var(--c,currentColor)}
+main{min-width:0;padding:26px 28px 44px}
+section.view{display:none}
+section.view.active{display:block;animation:fade 200ms var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}}
+
+/* ---------- tombol ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:transparent;font-weight:500;font-size:14px;white-space:nowrap;transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),color var(--dur) var(--ease)}
 .btn:hover{background:var(--surface-2)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
-.btn.danger{color:var(--danger);border-color:var(--danger-soft);background:var(--danger-soft)}
-.btn.danger:hover{border-color:var(--danger)}
-.btn.ghost{border-color:transparent;background:transparent}
+.btn:active{opacity:.85}
+.btn.primary,.btn.accent{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.btn.primary:hover,.btn.accent:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,transparent)}
+.btn.danger:hover{background:var(--danger-soft)}
+.btn.ghost{border-color:transparent}
 .btn.ghost:hover{background:var(--surface-2)}
-.btn.sm{height:30px;padding:0 10px;font-size:13px}
-.icon-btn{width:32px;height:32px;padding:0;display:inline-grid;place-items:center;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer}
+.btn.sm{height:32px;padding:0 11px;font-size:13px}
+.btn.sm svg{width:16px;height:16px}
+.icon-btn{width:34px;height:34px;padding:0;display:inline-grid;place-items:center;border-radius:var(--r-sm);border:1px solid transparent;background:transparent;color:var(--muted);transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
 .icon-btn:hover{background:var(--surface-2);color:var(--text)}
 .icon-btn.danger:hover{color:var(--danger);background:var(--danger-soft)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ---------- dropdown ---------- */
 .dd{position:relative}
-.dd-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:250px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);padding:6px;display:none;z-index:30}
-.dd.open .dd-menu{display:block}
-.dd-menu button{display:flex;width:100%;align-items:center;gap:10px;padding:9px 10px;border:0;background:none;border-radius:7px;cursor:pointer;text-align:left}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:310px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:6px;display:none;z-index:30}
+.dd.open .dd-menu{display:block;animation:fade 140ms var(--ease)}
+.dd-menu button{display:flex;width:100%;align-items:center;gap:12px;padding:8px 10px;border:0;background:none;border-radius:var(--r-sm);text-align:left;font-weight:500}
 .dd-menu button:hover{background:var(--surface-2)}
-.dd-menu button small{display:block;color:var(--muted);font-size:12px}
+.dd-menu button small{display:block;color:var(--muted);font-size:12px;font-weight:400}
 .dd-menu .sep{height:1px;background:var(--border);margin:6px 4px}
-.dd-menu .label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 10px 4px;font-weight:600}
-.ft{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex:none}
-.ft.xl{background:#1d7044}.ft.pdf{background:#c2362b}.ft.doc{background:#2b5797}.ft.json{background:#6b7280}
-.seg{display:flex;background:var(--surface-2);border-radius:8px;padding:3px;gap:3px;margin:2px 4px 6px}
-.seg label{flex:1;text-align:center;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;color:var(--muted)}
+.dd-menu .label{font-size:12px;font-weight:500;color:var(--muted);padding:6px 10px}
+.ft{width:36px;height:36px;border-radius:var(--r);display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex:none}
+.btn .ft{width:30px;height:22px;border-radius:5px;margin-left:-6px}
+.ft.xl{background:#1d6f42}.ft.pdf{background:#b42318}.ft.doc{background:#2b579a}.ft.json{background:#55555b}
+.seg{display:flex;background:var(--surface-2);border-radius:var(--r-sm);padding:3px;gap:2px;margin:0 4px 4px}
+.seg label{flex:1;text-align:center;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted)}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg label:has(input:checked){background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:600}
+.seg label:has(input:checked){background:var(--primary);color:var(--on-primary)}
+.seg label:has(input:focus-visible){outline:2px solid var(--focus)}
 
-/* ---------- stats ---------- */
-.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:left;cursor:pointer;transition:border-color .12s,transform .12s}
-.stat:hover{border-color:var(--border-strong)}
-.stat.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.stat .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
-.stat .v{font-size:24px;font-weight:650;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
-.stat.warn .v{color:var(--warn)} .stat.danger .v{color:var(--danger)}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+/* ---------- kartu ringkasan: angka kiri, ikon lingkaran ungu kanan ---------- */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.tile{position:relative;overflow:hidden;appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--r-lg);padding:16px 18px;min-height:132px;display:flex;flex-direction:column;align-items:stretch;gap:2px;text-align:left;font:inherit;transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease)}
+.tile:hover{border-color:var(--border-strong);background:color-mix(in srgb,var(--surface-2) 50%,var(--surface))}
+.tile:active{transform:scale(.99)}
+.tile-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tile .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--violet) 18%,transparent);color:var(--violet)}
+.tile .ic svg{width:18px;height:18px}
+.tile .k{font-size:13px;font-weight:500;color:var(--muted)}
+/* panah kecil: penanda kartu bisa diklik untuk filter */
+.tile-top::after{content:"\2197";margin-left:auto;font-size:14px;color:var(--faint);opacity:0;transform:translate(-3px,3px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.tile:hover .tile-top::after,.tile:focus-visible .tile-top::after{opacity:1;transform:none}
+.tile .v{font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.tile .f{font-size:12.5px;color:var(--faint)}
+.tile .share{display:block;height:4px;border-radius:999px;background:var(--surface-3);margin-top:10px;overflow:hidden}
+.tile .share i{display:block;height:100%;border-radius:inherit;background:currentColor}
+/* kartu utama: gradasi maroon */
+.tile.hero{background:linear-gradient(135deg,var(--primary) 0%,color-mix(in srgb,var(--primary) 45%,var(--surface)) 100%);border-color:transparent;color:#fff}
+.tile.hero:hover{filter:brightness(1.08)}
+.tile.hero .ic{background:rgba(255,255,255,.16);color:#fff}
+.tile.hero .k,.tile.hero .f,.tile.hero .tile-top::after{color:rgba(255,255,255,.78)}
+.tile.warn .ic{background:var(--warn-soft);color:var(--warn)}
+.tile.danger .ic{background:var(--danger-soft);color:var(--danger)}
+.tile.warn .share{color:var(--warn)}
+.tile.danger .share{color:var(--danger)}
+.tile.warn:not(.zero) .v{color:var(--warn)}
+.tile.danger:not(.zero) .v{color:var(--danger)}
+.tile.zero .share{opacity:.5}
+.tile.active{border-color:var(--violet);box-shadow:inset 0 0 0 1px var(--violet)}
 
-/* ---------- toolbar ---------- */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;padding:14px;border-bottom:1px solid var(--border);align-items:center}
-.search{position:relative;flex:1 1 260px;min-width:0}
-.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint)}
-.search input[type=search]{padding-left:34px;padding-right:30px}
-.search kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:11px var(--mono);color:var(--faint);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
-input[type=text],input[type=number],input[type=url],input[type=search],select,textarea{width:100%;height:36px;border:1px solid var(--border-strong);background:var(--surface);border-radius:8px;padding:0 10px;outline:none}
-textarea{height:auto;min-height:70px;padding:8px 10px;resize:vertical}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.toolbar select{width:auto;min-width:140px;flex:0 1 auto}
-.chips{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border)}
-.chip{border:1px solid var(--border);background:var(--surface);border-radius:99px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
-.chip:hover{border-color:var(--border-strong);color:var(--text)}
-.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
-.chip .n{font-variant-numeric:tabular-nums;opacity:.75}
-.result-line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+/* ---------- kartu, toolbar, chip ---------- */
+.card{background:var(--surface);border-radius:var(--r-lg);overflow:hidden}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;padding:16px 16px 8px;align-items:center}
+.search{position:relative;flex:1 1 300px;min-width:0}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search input[type=search]{padding-left:40px;padding-right:40px}
+.search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:500 11.5px var(--mono);color:var(--muted);border:1px solid var(--border-strong);border-radius:4px;padding:0 6px}
+input[type=text],input[type=number],input[type=url],input[type=search],select,textarea{width:100%;height:40px;border:1px solid var(--border-strong);background:transparent;border-radius:var(--r-sm);padding:0 12px;outline:none;font-size:14px;transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+select option{background:var(--surface);color:var(--text)}
+textarea{height:auto;min-height:76px;padding:9px 12px;resize:vertical;line-height:1.5}
+input:hover,select:hover,textarea:hover{border-color:var(--faint)}
+input:focus,select:focus,textarea:focus{border-color:var(--violet);box-shadow:0 0 0 3px color-mix(in srgb,var(--violet) 25%,transparent)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+.toolbar select{width:auto;min-width:150px;flex:0 1 auto;cursor:pointer}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:4px 16px 14px}
+.chip{border:1px solid var(--border-strong);background:transparent;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:500;color:var(--text);display:inline-flex;gap:7px;align-items:center;transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.chip:hover{background:var(--surface-2)}
+.chip .n{font-size:11px;color:var(--muted)}
+.chip.on{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.chip.on .n{color:inherit;opacity:.75}
+.result-line{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:6px 18px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.result-line b{color:var(--text)}
 
-/* ---------- table ---------- */
+/* ---------- tabel: header ungu ---------- */
 .table-wrap{overflow-x:auto}
 table.grid{width:100%;border-collapse:collapse}
-.grid th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+.grid th{text-align:left;font-size:13.5px;font-weight:600;color:var(--text);padding:14px 10px;background:var(--thead);white-space:nowrap;user-select:none}
+.grid th:first-child{padding-left:18px}
 .grid th[data-sort]{cursor:pointer}
-.grid th[data-sort]:hover{color:var(--text)}
-.grid th .arr{opacity:.4;margin-left:3px}
-.grid th.sorted .arr{opacity:1;color:var(--accent)}
-.grid td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
-.grid tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}
-.grid tbody tr:last-child td{border-bottom:0}
-.code{font-family:var(--mono);font-size:12px;background:var(--surface-2);padding:2px 6px;border-radius:5px;white-space:nowrap}
-.name{font-weight:600;cursor:pointer}
-.name:hover{color:var(--accent)}
-.sub{font-size:12px;color:var(--muted)}
-.mono{font-family:var(--mono);font-size:12.5px}
-.cat-pill{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--info-soft);color:var(--info);white-space:nowrap}
-.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:5px;background:var(--surface-2);border:1px solid var(--border);margin:0 3px 3px 0;white-space:nowrap}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
-.badge.aman{background:var(--ok-soft);color:var(--ok)}
-.badge.menipis{background:var(--warn-soft);color:var(--warn)}
-.badge.habis{background:var(--danger-soft);color:var(--danger)}
-.badge.masuk,.badge.baru{background:var(--ok-soft);color:var(--ok)}
-.badge.keluar{background:var(--warn-soft);color:var(--warn)}
-.badge.koreksi{background:var(--info-soft);color:var(--info)}
-.badge.hapus{background:var(--danger-soft);color:var(--danger)}
-.stock{display:flex;align-items:center;gap:4px;margin-bottom:4px}
-.stock b{min-width:34px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums}
-.stock .u{font-size:12px;color:var(--muted);margin-right:4px}
-.step{width:24px;height:24px;border-radius:6px;border:1px solid var(--border-strong);background:var(--surface);cursor:pointer;display:grid;place-items:center;padding:0;color:var(--muted)}
-.step:hover{color:var(--accent);border-color:var(--accent)}
-.step svg{width:13px;height:13px}
+.grid th[data-sort]:hover{color:var(--violet)}
+.grid th .arr{opacity:.45;margin-left:4px;font-size:10px}
+.grid th.sorted .arr{opacity:1;color:var(--violet)}
+.grid td{padding:14px 10px;border-top:1px solid var(--border);vertical-align:top;font-size:13.5px}
+.grid thead + tbody tr:first-child td{border-top:0}
+.grid td:first-child{padding-left:18px}
+.grid td:last-child{padding-right:12px}
+.grid td[data-label="Nama"]{min-width:170px}
+.grid td[data-label="Proyek"]{min-width:120px}
+.grid tbody tr{transition:background var(--dur) var(--ease)}
+.grid tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 60%,transparent)}
+.code{display:inline-block;font-size:12.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+.code::before{content:"#"}
+.name{font-weight:500;cursor:pointer;line-height:1.35}
+.name:hover{color:var(--violet);text-decoration:underline;text-underline-offset:3px}
+.cat-pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--surface-2);color:var(--text)}
+.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:999px;border:1px solid var(--border-strong);margin:0 4px 4px 0;white-space:nowrap}
+/* status: titik + teks berwarna, seperti kolom Status referensi */
+.badge{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;padding:0;white-space:nowrap;color:var(--muted)}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.aman,.badge.masuk,.badge.baru{color:var(--ok)}
+.badge.menipis,.badge.keluar{color:var(--warn)}
+.badge.habis,.badge.hapus{color:var(--danger)}
+.badge.koreksi{color:var(--info)}
+.stock{display:flex;align-items:center;gap:6px}
+.stock b{min-width:32px;text-align:center;font-size:15px;font-weight:600}
+.stock .u{font-size:12px;color:var(--muted)}
+.step{width:28px;height:28px;border-radius:50%;border:1px solid var(--border-strong);background:transparent;display:grid;place-items:center;padding:0;color:var(--muted);transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.step:hover{color:var(--on-violet);background:var(--violet);border-color:var(--violet)}
+.step svg{width:14px;height:14px}
+.meter{position:relative;width:100px;height:6px;border-radius:999px;margin:9px 0 5px;background:var(--surface-3);overflow:hidden;--c:var(--violet)}
+.meter i{display:block;height:100%;border-radius:999px;background:var(--c)}
+.meter::after{content:"";position:absolute;left:calc(50% - 1px);top:0;bottom:0;width:2px;background:var(--surface)}
+.meter.menipis{--c:var(--warn)} .meter.habis{--c:var(--danger)}
 .actions{white-space:nowrap;text-align:right}
 .empty{padding:56px 20px;text-align:center;color:var(--muted)}
-.empty .big{width:56px;height:56px;margin:0 auto 14px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.empty .big{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--violet);color:var(--on-violet);box-shadow:0 0 0 6px var(--violet-ring);display:grid;place-items:center}
 .empty .big svg{width:28px;height:28px}
-.empty h3{color:var(--text);margin:0 0 6px;font-size:17px}
-.empty .row{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.empty h3{color:var(--text);margin:0 0 6px;font-size:18px;font-weight:600}
+.empty p{margin:0 auto;max-width:440px}
+.empty .row{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
 
-/* ---------- projects / settings ---------- */
-.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
-.proj{padding:16px}
-.proj h3{margin:0;font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.proj .meta{font-size:12.5px;color:var(--muted);margin:4px 0 12px}
+/* ---------- proyek & pengaturan ---------- */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.proj{padding:0}
+.proj h3{margin:0;padding:16px 18px 0;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.proj .meta{font-size:12.5px;color:var(--muted);margin:2px 18px 12px}
+.proj > .sub{padding:0 18px 18px}
 .proj ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
-.proj li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.proj li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 18px;font-size:13.5px;border-bottom:1px solid var(--border)}
 .proj li:last-child{border-bottom:0}
-.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
-.section-head h2{margin:0;font-size:18px}
-.section-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
-.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
-.set{padding:16px}
-.set h3{margin:0 0 4px;font-size:15px}
-.set p.d{margin:0 0 12px;color:var(--muted);font-size:13px}
-.list{border:1px solid var(--border);border-radius:8px;max-height:300px;overflow:auto}
-.list .li{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-bottom:1px solid var(--border);font-size:13.5px}
+.proj li .code{margin-right:8px}
+.proj li .badge{margin-left:8px}
+.section-head{display:flex;justify-content:flex-end;gap:12px;margin-bottom:14px}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.set{padding:20px}
+.set h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.set p.d{margin:0 0 14px;color:var(--muted);font-size:13px}
+.list{border:1px solid var(--border-strong);border-radius:var(--r);max-height:300px;overflow:auto}
+.list .li{display:flex;align-items:center;gap:4px;padding:4px 6px 4px 12px;font-size:13.5px;border-bottom:1px solid var(--border)}
 .list .li:last-child{border-bottom:0}
+.list .li:hover{background:var(--surface-2)}
 .list .li span.grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.list .li .n{font-size:12px;color:var(--muted)}
-.add-row{display:flex;gap:8px;margin-top:10px}
+.list .li .n{font-size:12px;color:var(--muted);margin-right:4px}
+.add-row{display:flex;gap:8px;margin-top:12px}
 .btn-col{display:flex;flex-direction:column;gap:8px}
-.btn-col .btn{justify-content:flex-start}
-.note{font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:10px 12px;margin-top:12px}
-.backup-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:16px;padding:10px 14px;border:1px dashed var(--border-strong);border-radius:var(--radius)}
-.backup-bar.stale{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+.btn-col .btn{justify-content:flex-start;height:42px}
+.btn-col .btn svg{margin-left:-2px}
+.note{font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:var(--r);padding:12px 14px;margin-top:14px}
+.backup-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:16px;padding:8px 8px 8px 18px;border-radius:var(--r-lg);background:var(--surface)}
+.backup-bar > span{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.backup-bar.stale{color:var(--warn);background:var(--warn-soft)}
 
 /* ---------- dialog ---------- */
-dialog{border:0;border-radius:14px;padding:0;background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
-dialog.small{width:min(440px,calc(100vw - 24px))}
-dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
-.dlg-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
-.dlg-head h2{margin:0;font-size:17px}
-.dlg-body{padding:18px 20px}
-.dlg-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface)}
-.dlg-foot .left{margin-right:auto;display:flex;gap:8px}
-.form-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 14px}
-.f{display:flex;flex-direction:column;gap:5px;grid-column:span 3;min-width:0}
+dialog{border:1px solid var(--border-strong);border-radius:16px;padding:0;background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);width:min(780px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
+dialog.small{width:min(460px,calc(100vw - 24px))}
+dialog[open]{animation:pop 180ms var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.99)}}
+dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;position:sticky;top:0;background:var(--thead);z-index:2}
+.dlg-head h2{margin:0;font-size:17px;font-weight:600}
+.dlg-body{padding:20px 22px}
+.dlg-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface)}
+.dlg-foot .left{margin-right:auto;display:flex;gap:10px}
+.form-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.f{display:flex;flex-direction:column;gap:6px;grid-column:span 3;min-width:0}
 .f.s2{grid-column:span 2}.f.s6{grid-column:span 6}.f.s4{grid-column:span 4}
-.f label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.f label{font-size:13px;font-weight:500}
 .f label .req{color:var(--danger)}
-.f .hint{font-size:11.5px;color:var(--faint)}
-.fieldset-title{grid-column:span 6;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700;margin-top:6px;padding-top:10px;border-top:1px solid var(--border)}
-.fieldset-title:first-child{border-top:0;padding-top:0;margin-top:0}
-.sym{display:flex;gap:4px;margin-top:2px}
-.sym button{height:24px;min-width:28px;border:1px solid var(--border);background:var(--surface-2);border-radius:5px;cursor:pointer;font-size:12.5px;padding:0 6px}
-.sym button:hover{border-color:var(--accent);color:var(--accent)}
-.tags-input{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:36px;border:1px solid var(--border-strong);border-radius:8px;padding:4px 6px;background:var(--surface)}
-.tags-input:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.tags-input input{border:0!important;box-shadow:none!important;height:26px;flex:1;min-width:140px;padding:0 4px}
-.tchip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:2px 4px 2px 8px;font-size:12.5px;font-weight:600}
-.tchip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 2px;line-height:1;font-size:15px}
-.mv-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.mv-seg label{border:1px solid var(--border-strong);border-radius:9px;padding:12px;cursor:pointer;text-align:center;font-weight:600}
+.f .hint{font-size:12px;color:var(--faint)}
+.fieldset-title{grid-column:span 6;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;margin-top:10px}
+.fieldset-title:first-child{margin-top:0}
+.fieldset-title span{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--violet);color:var(--on-violet);font-size:11.5px;font-weight:700;box-shadow:0 0 0 4px var(--violet-ring)}
+.sym{display:flex;gap:6px;margin-top:2px}
+.sym button{height:28px;min-width:32px;border:1px solid var(--border-strong);background:transparent;border-radius:var(--r-sm);font-size:13px;font-weight:500;padding:0 8px;transition:background var(--dur) var(--ease)}
+.sym button:hover{background:var(--surface-2)}
+.tags-input{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:40px;border:1px solid var(--border-strong);border-radius:var(--r-sm);padding:5px 8px;background:transparent;transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.tags-input:hover{border-color:var(--faint)}
+.tags-input:focus-within{border-color:var(--violet);box-shadow:0 0 0 3px color-mix(in srgb,var(--violet) 25%,transparent)}
+.tags-input input{border:0!important;box-shadow:none!important;background:transparent!important;height:28px;flex:1;min-width:150px;padding:0 4px}
+.tchip{display:inline-flex;align-items:center;gap:2px;background:var(--surface-3);color:var(--text);border-radius:999px;padding:2px 2px 2px 10px;font-size:12.5px;font-weight:500}
+.tchip button{border:0;background:none;color:inherit;opacity:.7;padding:0 6px;line-height:1;font-size:16px;min-height:22px}
+.tchip button:hover{opacity:1}
+.mv-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:16px;background:var(--surface-2);border-radius:var(--r);padding:4px}
+.mv-seg label{border-radius:var(--r-sm);padding:10px;cursor:pointer;text-align:center;font-weight:500;color:var(--muted)}
 .mv-seg input{position:absolute;opacity:0;pointer-events:none}
-.mv-seg label:has(input[value=masuk]:checked){border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
-.mv-seg label:has(input[value=keluar]:checked){border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
-.preview{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border-radius:9px;background:var(--surface-2);margin-top:14px;font-size:14px}
-.preview b{font-size:20px;font-variant-numeric:tabular-nums}
-.dl{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:13.5px}
+.mv-seg label:has(input:focus-visible){outline:2px solid var(--focus)}
+.mv-seg label:has(input[value=masuk]:checked){background:var(--ok);color:var(--surface)}
+.mv-seg label:has(input[value=keluar]:checked){background:var(--primary);color:var(--on-primary)}
+.preview{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px;border-radius:var(--r);background:var(--surface-2);margin-top:16px;font-size:13px}
+.preview b{font-size:24px;font-weight:600}
+.dl{display:grid;grid-template-columns:170px 1fr;gap:10px 16px;font-size:13.5px}
 .dl dt{color:var(--muted)}
 .dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
-.detail-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap}
-.detail-head h3{margin:4px 0 2px;font-size:19px}
-.big-stock{text-align:right}
-.big-stock .v{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
-.mini-log{margin-top:18px}
-.mini-log h4{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.detail-head{display:flex;gap:16px;align-items:stretch;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap}
+.detail-head > div:first-child{flex:1;min-width:220px}
+.detail-head h3{margin:8px 0 4px;font-size:21px;font-weight:600}
+.detail-head .cat-pill{margin-left:8px}
+.big-stock{position:relative;text-align:left;background:var(--surface-2);border-radius:var(--r-lg);padding:14px 16px;min-width:170px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.big-stock .v{font-size:30px;font-weight:600;line-height:1}
+.big-stock .badge{align-self:flex-start}
+.mini-log{margin-top:22px}
+.mini-log h4{margin:0 0 10px;font-size:15px;font-weight:600}
+.mini-log .table-wrap{border:1px solid var(--border);border-radius:var(--r)}
+.mini-log .grid tr:first-child td{border-top:0}
 
 /* ---------- toast ---------- */
-#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:calc(100vw - 32px)}
-.toast{background:var(--text);color:var(--bg);padding:10px 14px;border-radius:9px;box-shadow:var(--shadow-lg);font-size:13.5px;animation:tin .18s ease-out;max-width:380px}
-.toast.danger{background:var(--danger);color:#fff}
-.toast.warn{background:var(--warn);color:#fff}
-@keyframes tin{from{transform:translateY(8px);opacity:0}}
+#toasts{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:calc(100vw - 32px)}
+.toast{background:var(--surface-3);color:var(--text);padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--violet);box-shadow:var(--shadow-lg);font-size:13.5px;font-weight:500;animation:pop 180ms var(--ease);max-width:380px}
+.toast.danger{border-left-color:var(--danger)}
+.toast.warn{border-left-color:var(--warn)}
 
-/* ---------- responsive ---------- */
-@media (max-width:1100px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:900px){
+/* ---------- sentuh & gerak ---------- */
+@media (pointer:coarse){
+  .btn{min-height:44px}
+  .btn.sm{min-height:40px}
+  .icon-btn{width:44px;height:44px}
+  .step{width:38px;height:38px}
+  .chip{min-height:36px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ---------- responsif ---------- */
+/* layar laptop: sidebar menjadi rail ikon agar tabel muat tanpa scroll horizontal */
+@media (min-width:901px) and (max-width:1500px){
+  .app{grid-template-columns:76px minmax(0,1fr);margin:14px;min-height:calc(100vh - 28px)}
+  .side{height:calc(100vh - 28px)}
+  .brand{padding:0;justify-content:center}
+  .brand-text,.tab .lbl,.tab .count,.rc-k,.rc-v small,.theme-row > span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .tab{justify-content:center;padding:0}
+  .tab svg{width:20px;height:20px}
+  .restock-card{margin:auto 10px 0;padding:10px 6px;align-items:center;text-align:center}
+  .rc-v{font-size:20px;margin:0 0 8px}
+  .restock-card .btn{padding:0;gap:0;height:36px}
+  .restock-card .btn .lbl-txt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  header.top{padding:10px 22px}
+  main{padding:22px 22px 40px}
+}
+@media (max-width:1280px){
+  .grid td,.grid th{padding-left:8px;padding-right:8px}
+  .grid td[data-label="Nama"]{min-width:150px}
+}
+@media (max-width:1100px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:1180px){
   .grid thead{display:none}
   .grid,.grid tbody,.grid tr,.grid td{display:block;width:100%}
-  .grid tr{padding:12px 14px;border-bottom:1px solid var(--border);position:relative}
-  .grid td{border:0;padding:3px 0;display:flex;gap:10px}
-  .grid td::before{content:attr(data-label);flex:0 0 84px;font-size:12px;color:var(--faint)}
-  .grid td.actions{position:absolute;top:8px;right:8px;width:auto;padding:0}
+  .grid tr{padding:14px 18px;border-top:1px solid var(--border);position:relative}
+  .grid tbody tr:first-child{border-top:0}
+  .grid td,.grid td:first-child,.grid td:last-child{border:0;padding:3px 0;display:flex;gap:10px}
+  .grid td::before{content:attr(data-label);flex:0 0 88px;font-size:12px;color:var(--faint);line-height:1.9}
+  .grid td.actions{position:absolute;top:10px;right:10px;width:auto;padding:0}
   .grid td.actions::before{content:none}
   .grid td[data-label="Kode"]::before{content:none}
 }
-@media (max-width:760px){
-  .wrap{padding:0 16px}
-  .brand small{display:none}
-  .top-inner .btn .lbl{display:none}
-  .top-inner .btn{padding:0 10px}
-  .sync .t{display:none}
-  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .stat{padding:10px 12px}.stat .v{font-size:20px}
+@media (max-width:900px){
+  body{background:var(--bg)}
+  .app{grid-template-columns:1fr;margin:0;border-radius:0;min-height:100vh;overflow:visible}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;min-height:0;flex-direction:row;align-items:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:40;border-top:1px solid var(--border)}
+  .brand,.restock-card{display:none}
+  .theme-row{margin:0 4px 0 2px}
+  .theme-row > span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .nav{flex:1;flex-direction:row;gap:2px;margin:0}
+  .tab{flex:1;flex-direction:column;gap:3px;min-height:56px;padding:6px 2px;font-size:11.5px;justify-content:center;align-items:center;border-radius:var(--r)}
+  .tab[aria-selected="true"]::before{left:30%;right:30%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
+  .tab .count{display:none}
+  header.top{position:static;padding:14px 16px;min-height:0}
+  main{padding:18px 16px calc(100px + env(safe-area-inset-bottom))}
+  /* label tetap terbaca screen reader walau disembunyikan secara visual */
+  .top-actions .btn .lbl,.sync .t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .top-actions .btn{padding:0 13px}
+  #toasts{right:12px;left:12px;bottom:calc(88px + env(safe-area-inset-bottom))}
+}
+@media (max-width:640px){
+  .tiles{gap:10px}
+  .tile{padding:14px;min-height:118px}
+  .tile-top{margin-bottom:10px;gap:8px}
+  .tile-top::after{content:none}
+  .tile .ic{width:30px;height:30px;border-radius:8px}
+  .tile .ic svg{width:16px;height:16px}
+  .tile .v{font-size:26px}
+  .tile .k{font-size:12px}
+  .tile .f{font-size:11.5px}
+  .toolbar{padding:12px 12px 8px}
   .toolbar select{flex:1 1 calc(50% - 5px);min-width:0}
+  .chips{padding:4px 12px 12px;flex-wrap:nowrap;overflow-x:auto}
+  .chip{flex:none}
+  .grid tr{padding:14px 12px}
   .form-grid{grid-template-columns:1fr 1fr}
   .f,.f.s2,.f.s4,.f.s6,.fieldset-title{grid-column:span 2}
   .f.half{grid-column:span 1}
-  .dl{grid-template-columns:1fr}
-  .dl dt{margin-top:6px}
+  .dl{grid-template-columns:1fr;gap:2px}
+  .dl dt{margin-top:8px}
+  .proj-grid{grid-template-columns:1fr}
+  .dlg-head,.dlg-body,.dlg-foot{padding-left:16px;padding-right:16px}
+  .dlg-foot{flex-wrap:wrap}
+  .dlg-foot .left{margin-right:0;width:100%}
+  .dlg-foot .left .btn,.dlg-foot > .btn{flex:1}
 }
 </style>
 </head>
 <body>
+<div class="app">
+<aside class="side">
+  <div class="brand">
+    <div class="logo" id="logo"></div>
+    <div class="brand-text">Inventaris<small>Komponen elektronik</small></div>
+  </div>
+  <nav class="nav" role="tablist">
+    <button class="tab" role="tab" data-tab="items" title="Barang" aria-selected="true"><span data-i="box"></span><span class="lbl">Barang</span><span class="count" id="tcItems">0</span></button>
+    <button class="tab" role="tab" data-tab="logs" title="Riwayat" aria-selected="false"><span data-i="history"></span><span class="lbl">Riwayat</span><span class="count" id="tcLogs">0</span></button>
+    <button class="tab" role="tab" data-tab="projects" title="Proyek" aria-selected="false"><span data-i="folder"></span><span class="lbl">Proyek</span><span class="count" id="tcProj">0</span></button>
+    <button class="tab" role="tab" data-tab="settings" title="Pengaturan" aria-selected="false"><span data-i="gear"></span><span class="lbl">Pengaturan</span></button>
+  </nav>
+  <div class="restock-card" id="restockCard"></div>
+  <div class="theme-row"><span>Terang</span><button class="switch theme-toggle" role="switch" aria-label="Mode gelap" title="Ganti tema terang/gelap"></button><span>Gelap</span></div>
+</aside>
+
+<div class="content">
 <header class="top">
-  <div class="wrap top-inner">
-    <div class="brand">
-      <div class="logo" id="logo"></div>
-      <div class="brand-text">Inventaris Elektronik<small>Komponen &amp; mikrokontroler</small></div>
-    </div>
+  <div class="title"><span class="title-ic" id="pageIcon" aria-hidden="true"></span><div><h1 id="pageTitle">Barang</h1><p id="pageSub"></p></div></div>
+  <div class="top-actions">
     <span class="sync" id="syncPill" hidden><span class="dot"></span><span class="t"></span></span>
-    <button class="icon-btn" id="themeBtn" title="Ganti tema terang/gelap" aria-label="Ganti tema"></button>
     <div class="dd" id="exportDD">
       <button class="btn" data-dd="exportDD" aria-haspopup="true"><span data-i="download"></span><span class="lbl">Ekspor</span></button>
       <div class="dd-menu" role="menu">
@@ -300,28 +472,20 @@ dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
         <button data-export="docx"><span class="ft doc">DOC</span><span>Word (.docx)<small>Laporan yang bisa diedit</small></span></button>
       </div>
     </div>
-    <button class="btn primary" id="addBtn"><span data-i="plus"></span><span class="lbl">Tambah barang</span></button>
+    <button class="btn accent" id="addBtn"><span data-i="plus"></span><span class="lbl">Tambah barang</span></button>
   </div>
 </header>
-<nav class="tabs">
-  <div class="wrap" role="tablist">
-    <button class="tab" role="tab" data-tab="items" aria-selected="true"><span data-i="box"></span>Barang <span class="count" id="tcItems">0</span></button>
-    <button class="tab" role="tab" data-tab="logs" aria-selected="false"><span data-i="history"></span>Riwayat <span class="count" id="tcLogs">0</span></button>
-    <button class="tab" role="tab" data-tab="projects" aria-selected="false"><span data-i="folder"></span>Proyek <span class="count" id="tcProj">0</span></button>
-    <button class="tab" role="tab" data-tab="settings" aria-selected="false"><span data-i="gear"></span>Pengaturan &amp; Data</button>
-  </div>
-</nav>
 
-<main class="wrap">
+<main>
   <!-- ========== ITEMS ========== -->
   <section class="view active" id="view-items">
-    <div class="stats" id="stats"></div>
+    <div class="tiles" id="stats"></div>
     <div class="card">
       <div class="toolbar">
         <div class="search"><span data-i="search"></span><input type="search" id="q" placeholder="Cari nama, kode, nilai, part number, lokasi…" autocomplete="off"><kbd>/</kbd></div>
         <select id="fLoc" aria-label="Filter lokasi"></select>
         <select id="fStatus" aria-label="Filter status">
-          <option value="">Semua status</option><option value="aman">Aman</option><option value="menipis">Menipis</option><option value="habis">Habis</option>
+          <option value="">Semua status</option><option value="aman">Aman</option><option value="menipis">Menipis</option><option value="habis">Habis</option><option value="restock">Perlu restock (menipis + habis)</option>
         </select>
         <select id="fProj" aria-label="Filter proyek"></select>
       </div>
@@ -333,9 +497,6 @@ dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
 
   <!-- ========== LOGS ========== -->
   <section class="view" id="view-logs">
-    <div class="section-head">
-      <div><h2>Riwayat stok</h2><p>Setiap barang masuk, keluar, koreksi, dan penghapusan tercatat di sini.</p></div>
-    </div>
     <div class="card">
       <div class="toolbar">
         <div class="search"><span data-i="search"></span><input type="search" id="lq" placeholder="Cari barang, proyek, catatan…"></div>
@@ -350,7 +511,6 @@ dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
   <!-- ========== PROJECTS ========== -->
   <section class="view" id="view-projects">
     <div class="section-head">
-      <div><h2>Proyek</h2><p>Komponen yang ditandai untuk proyek dan jumlah yang sudah dipakai.</p></div>
       <button class="btn" id="addProjBtn"><span data-i="plus"></span>Proyek baru</button>
     </div>
     <div id="projBody"></div>
@@ -390,6 +550,8 @@ dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
     </div>
   </section>
 </main>
+</div>
+</div>
 
 <!-- hidden inputs & datalists -->
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
@@ -404,13 +566,13 @@ dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
     <div class="dlg-head"><h2 id="itemDlgTitle">Tambah barang</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><span data-i="x"></span></button></div>
     <div class="dlg-body">
       <div class="form-grid">
-        <div class="fieldset-title">Identitas</div>
+        <div class="fieldset-title"><span>01</span>Identitas</div>
         <div class="f s4"><label for="f_name">Nama barang <span class="req">*</span></label><input type="text" id="f_name" required placeholder="mis. ESP32 DevKit V1, Resistor 10kΩ"></div>
         <div class="f s2"><label for="f_code">Kode</label><input type="text" id="f_code" class="mono" placeholder="Otomatis"></div>
         <div class="f"><label for="f_category">Kategori <span class="req">*</span></label><select id="f_category"></select></div>
         <div class="f"><label for="f_partNumber">Part number / chip</label><input type="text" id="f_partNumber" placeholder="mis. ATmega328P, NE555P"></div>
 
-        <div class="fieldset-title">Spesifikasi teknis</div>
+        <div class="fieldset-title"><span>02</span>Spesifikasi teknis</div>
         <div class="f s2"><label for="f_value">Nilai</label><input type="text" id="f_value" placeholder="10kΩ, 100µF, 16MHz">
           <div class="sym" data-target="f_value"><button type="button">Ω</button><button type="button">µ</button><button type="button">±</button><button type="button">°</button></div></div>
         <div class="f s2"><label for="f_package">Package</label><input type="text" id="f_package" list="dlPkg" placeholder="DIP-8, TO-220, Modul"></div>
@@ -418,14 +580,14 @@ dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
         <div class="f s6"><label for="f_specs">Detail spesifikasi</label><textarea id="f_specs" rows="2" placeholder="Fitur penting, pinout, protokol (I2C/SPI/UART), toleransi, dll."></textarea></div>
         <div class="f s6"><label for="f_datasheet">Link datasheet</label><input type="url" id="f_datasheet" placeholder="https://…"></div>
 
-        <div class="fieldset-title">Stok &amp; lokasi</div>
+        <div class="fieldset-title"><span>03</span>Stok &amp; lokasi</div>
         <div class="f s2 half"><label for="f_qty">Jumlah</label><input type="number" id="f_qty" min="0" step="1" value="0"></div>
         <div class="f s2 half"><label for="f_unit">Satuan</label><input type="text" id="f_unit" list="dlUnit" value="pcs"></div>
         <div class="f s2"><label for="f_minStock">Stok minimum</label><input type="number" id="f_minStock" min="0" step="1" value="0"><span class="hint">Peringatan muncul bila stok ≤ angka ini</span></div>
         <div class="f s4"><label for="f_location">Lokasi (rak / laci / kotak)</label><input type="text" id="f_location" list="dlLoc" placeholder="mis. Rak A / Laci 2"></div>
         <div class="f s2"><label for="f_slot">Slot / kompartemen</label><input type="text" id="f_slot" placeholder="mis. Slot 5"></div>
 
-        <div class="fieldset-title">Proyek &amp; catatan</div>
+        <div class="fieldset-title"><span>04</span>Proyek &amp; catatan</div>
         <div class="f s6"><label for="f_projInput">Dipakai / dialokasikan untuk proyek</label>
           <div class="tags-input" id="f_tags"><input type="text" id="f_projInput" list="dlProj" placeholder="Ketik nama proyek lalu Enter"></div></div>
         <div class="f s6"><label for="f_notes">Catatan</label><textarea id="f_notes" rows="2" placeholder="Kondisi, sumber pembelian, dsb."></textarea></div>
@@ -524,7 +686,16 @@ const ICONS = {
   moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
   sparkle:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
   link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-  alert:'<path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>'
+  alert:'<path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  layers:'<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/>',
+  empty:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>'
+};
+const PAGE_INFO = {
+  items: ['Barang', 'Semua komponen & mikrokontroler yang Anda simpan'],
+  logs: ['Riwayat stok', 'Setiap barang masuk, keluar, koreksi, dan penghapusan'],
+  projects: ['Proyek', 'Komponen per proyek dan jumlah yang sudah terpakai'],
+  settings: ['Pengaturan & data', 'Kategori, lokasi, proyek, backup, dan impor']
 };
 const icon = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
 const $ = (s, r=document) => r.querySelector(s);
@@ -709,7 +880,7 @@ function filteredItems() {
   const list = state.items.filter(it => {
     if (ui.cat && it.category !== ui.cat) return false;
     if (ui.loc && it.location !== ui.loc) return false;
-    if (ui.status && statusOf(it) !== ui.status) return false;
+    if (ui.status === 'restock' ? statusOf(it) === 'aman' : ui.status && statusOf(it) !== ui.status) return false;
     if (ui.proj && !it.projects.includes(ui.proj)) return false;
     if (terms.length) {
       const hay = [it.code,it.name,it.category,it.value,it.partNumber,it.package,it.voltage,it.specs,it.location,it.slot,it.notes,it.projects.join(' ')].join(' ').toLowerCase();
@@ -741,17 +912,19 @@ function render() {
 function renderStats() {
   const it = state.items;
   const low = it.filter(i => statusOf(i) === 'menipis').length, out = it.filter(i => statusOf(i) === 'habis').length;
-  const cats = new Set(it.map(i => i.category)).size;
-  const cards = [
-    {k:'Jenis barang', v:it.length, act:'all', active: !ui.status && !ui.cat && !ui.loc && !ui.proj && !ui.q},
-    {k:'Total unit', v:it.reduce((s,i) => s + i.qty, 0), act:'all'},
-    {k:'Kategori dipakai', v:cats, act:'all'},
-    {k:'Proyek', v:allProjects().length, act:'projects'},
-    {k:'Stok menipis', v:low, act:'menipis', cls:'warn', dot:'var(--warn)', active: ui.status==='menipis'},
-    {k:'Habis', v:out, act:'habis', cls:'danger', dot:'var(--danger)', active: ui.status==='habis'}
+  const cats = new Set(it.map(i => i.category)).size, locs = new Set(it.map(i => i.location).filter(Boolean)).size;
+  const tiles = [
+    {k:'Jenis barang', v:it.length, f:`${cats} kategori`, act:'all', cls:'hero', ic:'box'},
+    {k:'Total unit', v:it.reduce((s,i) => s + i.qty, 0), f:`di ${locs} lokasi`, act:'all', cls:'', ic:'layers'},
+    {k:'Stok menipis', v:low, f:'≤ stok minimum', act:'menipis', cls:'warn', ic:'alert', active: ui.status==='menipis', p: it.length ? low / it.length * 100 : 0},
+    {k:'Habis', v:out, f:'Stok 0, perlu dibeli', act:'habis', cls:'danger', ic:'empty', active: ui.status==='habis', p: it.length ? out / it.length * 100 : 0}
   ];
-  $('#stats').innerHTML = cards.map(c => `<button class="stat ${c.cls||''} ${c.active?'active':''}" data-stat="${c.act}">
-    <div class="k">${c.dot?`<span class="dot" style="background:${c.dot}"></span>`:''}${c.k}</div><div class="v">${fmtNum(c.v)}</div></button>`).join('');
+  $('#stats').innerHTML = tiles.map(t => `<button class="tile ${t.cls} ${t.v?'':'zero'} ${t.active?'active':''}" data-stat="${t.act}" aria-pressed="${!!t.active}">
+    <span class="tile-top"><span class="ic">${icon(t.ic)}</span><span class="k">${t.k}</span></span><span class="v">${fmtNum(t.v)}</span><span class="f">${t.f}</span>${t.p == null ? '' : `<span class="share" title="${Math.round(t.p)}% dari semua barang"><i style="width:${t.p}%"></i></span>`}</button>`).join('');
+  const need = low + out;
+  $('#restockCard').innerHTML = need
+    ? `<span class="rc-k">Perlu restock</span><span class="rc-v">${need}<small>barang</small></span><button class="btn accent sm" data-act="restock"><span class="lbl-txt">Lihat daftar</span>${icon('arrow')}</button>`
+    : `<span class="rc-k">Status stok</span><span class="rc-v ok">Semua aman</span>`;
 }
 
 function fillSelect(sel, opts, allLabel, current) {
@@ -818,7 +991,7 @@ function renderItems() {
           <button class="step" data-act="dec" title="Kurangi 1" aria-label="Kurangi 1">${icon('minus')}</button>
           <b>${fmtNum(it.qty)}</b>
           <button class="step" data-act="inc" title="Tambah 1" aria-label="Tambah 1">${icon('plus')}</button><span class="u">${esc(it.unit)}</span></div>
-        ${it.minStock ? `<div class="sub">min ${fmtNum(it.minStock)}</div>` : ''}</div></td>
+        ${it.minStock ? `<div class="meter ${st}" title="Garis tengah = stok minimum"><i style="width:${Math.min(100, it.qty / (it.minStock * 2) * 100)}%"></i></div><div class="sub mono">min ${fmtNum(it.minStock)}</div>` : ''}</div></td>
       <td data-label="Status"><span class="badge ${st}">${STATUS_LABEL[st]}</span></td>
       <td data-label="Proyek"><div>${it.projects.map(p => `<span class="tag">${esc(p)}</span>`).join('') || '<span class="sub">—</span>'}</div></td>
       <td class="actions">
@@ -1158,7 +1331,7 @@ function addEntry(kind, inputSel) {
 const fileName = (ext) => `Inventaris-Elektronik_${today()}.${ext}`;
 const scopeLabel = () => {
   if (ui.scope === 'all') return 'Semua barang';
-  const f = [ui.cat && `kategori ${ui.cat}`, ui.loc && `lokasi ${ui.loc}`, ui.status && `status ${STATUS_LABEL[ui.status]}`, ui.proj && `proyek ${ui.proj}`, ui.q && `pencarian “${ui.q}”`].filter(Boolean);
+  const f = [ui.cat && `kategori ${ui.cat}`, ui.loc && `lokasi ${ui.loc}`, ui.status && `status ${STATUS_LABEL[ui.status] || 'perlu restock'}`, ui.proj && `proyek ${ui.proj}`, ui.q && `pencarian “${ui.q}”`].filter(Boolean);
   return f.length ? 'Filter: ' + f.join(', ') : 'Semua barang';
 };
 function summaryOf(rows) {
@@ -1217,8 +1390,8 @@ function exportPDF() {
   const s = summaryOf(rows);
   const doc = new J.jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
   const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
-  const TEAL = [15,118,110];
-  doc.setFillColor(...TEAL); doc.rect(0, 0, W, 4, 'F');
+  const INK = [29,31,34];
+  doc.setFillColor(...INK); doc.rect(0, 0, W, 4, 'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(24,32,42);
   doc.text('Laporan Inventaris Komponen Elektronik', 14, 16);
   doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(93,105,120);
@@ -1227,7 +1400,7 @@ function exportPDF() {
   const boxes = [['Jenis barang', s.n], ['Total unit', s.units], ['Stok menipis', s.low], ['Habis', s.out]];
   boxes.forEach(([k, v], idx) => {
     const x = 14 + idx * 48;
-    doc.setDrawColor(221,226,232); doc.setFillColor(244,246,248); doc.roundedRect(x, 26, 44, 14, 2, 2, 'FD');
+    doc.setDrawColor(220,216,207); doc.setFillColor(243,241,236); doc.rect(x, 26, 44, 14, 'FD');
     doc.setFontSize(8); doc.setTextColor(93,105,120); doc.text(k, x + 4, 31);
     doc.setFont('helvetica','bold'); doc.setFontSize(12);
     doc.setTextColor(...(idx === 2 && v ? [168,90,7] : idx === 3 && v ? [180,35,24] : [24,32,42]));
@@ -1240,8 +1413,8 @@ function exportPDF() {
     if (key) { data.cell.styles.fillColor = statusColors[key][0]; data.cell.styles.textColor = statusColors[key][1]; data.cell.styles.fontStyle = 'bold'; }
   };
   const common = { theme:'grid', margin:{left:14, right:14, bottom:14},
-    styles:{font:'helvetica', fontSize:7.6, cellPadding:1.6, lineColor:[221,226,232], lineWidth:.1, textColor:[24,32,42], valign:'middle', overflow:'linebreak'},
-    headStyles:{fillColor:TEAL, textColor:255, fontStyle:'bold', fontSize:8}, alternateRowStyles:{fillColor:[248,250,251]} };
+    styles:{font:'helvetica', fontSize:7.6, cellPadding:1.6, lineColor:[220,216,207], lineWidth:.1, textColor:[24,32,42], valign:'middle', overflow:'linebreak'},
+    headStyles:{fillColor:INK, textColor:255, fontStyle:'bold', fontSize:8}, alternateRowStyles:{fillColor:[247,246,242]} };
   doc.autoTable(Object.assign({}, common, {
     startY: 46,
     head: [['Kode','Nama barang','Kategori','Spesifikasi','Part number','Lokasi','Stok','Min','Status','Proyek']],
@@ -1279,7 +1452,7 @@ function exportDocx() {
   if (!D || !D.Document) return libMissing('Word');
   const rows = exportItems(); if (!guardRows(rows)) return;
   const s = summaryOf(rows);
-  const TEAL = '0F766E', BORDER = 'DDE2E8';
+  const INK = '1D1F22', BORDER = 'DCD8CF';
   const STATUS_FILL = {aman:['E6F4EA','15803D'], menipis:['FDF1DF','A85A07'], habis:['FDECEB','B42318']};
   const run = (text, o = {}) => new D.TextRun(Object.assign({text: String(text ?? ''), font:'Calibri', size:18}, o));
   const cell = (text, o = {}) => new D.TableCell({
@@ -1292,17 +1465,17 @@ function exportDocx() {
   const table = (headers, widths, body, statusCol) => new D.Table({
     width:{size: widths.reduce((a,b) => a+b, 0), type:D.WidthType.DXA}, columnWidths: widths, borders,
     rows: [
-      new D.TableRow({tableHeader:true, children: headers.map((h, i) => cell(h, {w:widths[i], fill:TEAL, color:'FFFFFF', bold:true}))}),
+      new D.TableRow({tableHeader:true, children: headers.map((h, i) => cell(h, {w:widths[i], fill:INK, color:'FFFFFF', bold:true}))}),
       ...body.map((r, ri) => new D.TableRow({cantSplit:true, children: r.map((v, ci) => {
         if (ci === statusCol) { const k = Object.keys(STATUS_LABEL).find(k => STATUS_LABEL[k] === v); return cell(v, {w:widths[ci], fill:STATUS_FILL[k][0], color:STATUS_FILL[k][1], bold:true, align:D.AlignmentType.CENTER}); }
-        return cell(v, {w:widths[ci], mono: ci === 0, bold: ci === 1, fill: ri % 2 ? 'F8FAFB' : undefined});
+        return cell(v, {w:widths[ci], mono: ci === 0, bold: ci === 1, fill: ri % 2 ? 'F7F6F2' : undefined});
       })}))
     ]
   });
   const statTable = new D.Table({
     width:{size:9600, type:D.WidthType.DXA}, columnWidths:[2400,2400,2400,2400], borders,
     rows:[new D.TableRow({children:[['Jenis barang', s.n,'18202A'],['Total unit', s.units,'18202A'],['Stok menipis', s.low,'A85A07'],['Habis', s.out,'B42318']].map(([k, v, c]) => new D.TableCell({
-      width:{size:2400, type:D.WidthType.DXA}, shading:{fill:'F4F6F8', type:D.ShadingType.CLEAR, color:'auto'}, margins:{top:80, bottom:80, left:140, right:140},
+      width:{size:2400, type:D.WidthType.DXA}, shading:{fill:'F3F1EC', type:D.ShadingType.CLEAR, color:'auto'}, margins:{top:80, bottom:80, left:140, right:140},
       children:[new D.Paragraph({children:[run(k, {size:16, color:'5D6978'})]}), new D.Paragraph({children:[run(fmtNum(v), {size:30, bold:true, color: v ? c : '18202A'})]})]
     }))})]
   });
@@ -1310,14 +1483,14 @@ function exportDocx() {
     new D.Paragraph({heading:D.HeadingLevel.TITLE, spacing:{after:60}, children:[run('Laporan Inventaris Komponen Elektronik', {size:40, bold:true, color:'18202A'})]}),
     new D.Paragraph({spacing:{after:200}, children:[run(`Dicetak ${fmtDateTime(nowISO())}  ·  ${scopeLabel()}`, {color:'5D6978', size:19})]}),
     statTable,
-    new D.Paragraph({heading:D.HeadingLevel.HEADING_1, spacing:{before:300, after:120}, children:[run('Daftar barang', {size:28, bold:true, color:TEAL})]}),
+    new D.Paragraph({heading:D.HeadingLevel.HEADING_1, spacing:{before:300, after:120}, children:[run('Daftar barang', {size:28, bold:true, color:INK})]}),
     table(['Kode','Nama barang','Kategori','Spesifikasi','Part number','Lokasi','Stok','Min','Status','Proyek'],
       [1150, 2600, 1500, 2100, 1400, 1900, 950, 650, 1000, 2100],
       rows.map(i => [i.code, i.name, i.category, specLine(i), i.partNumber, locLine(i), `${fmtNum(i.qty)} ${i.unit}`, i.minStock ? String(i.minStock) : '-', STATUS_LABEL[statusOf(i)], i.projects.join(', ')]), 8)
   ];
   const rs = restockList(rows);
   if (rs.length) {
-    children.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_1, spacing:{before:360, after:120}, children:[run(`Daftar belanja / perlu restock (${rs.length})`, {size:28, bold:true, color:TEAL})]}));
+    children.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_1, spacing:{before:360, after:120}, children:[run(`Daftar belanja / perlu restock (${rs.length})`, {size:28, bold:true, color:INK})]}));
     children.push(table(['Kode','Nama barang','Spesifikasi','Part number','Lokasi','Stok','Min','Beli min.','Status'],
       [1150, 3000, 2400, 1700, 2200, 900, 800, 1200, 1100],
       rs.map(i => [i.code, i.name, specLine(i), i.partNumber, locLine(i), String(i.qty), i.minStock ? String(i.minStock) : '-', `${i.need} ${i.unit}`, STATUS_LABEL[statusOf(i)]]), 8));
@@ -1444,6 +1617,8 @@ function setTab(t) {
   ui.tab = t;
   $$('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + t));
+  [$('#pageTitle').textContent, $('#pageSub').textContent] = PAGE_INFO[t];
+  $('#pageIcon').innerHTML = icon({items:'box', logs:'history', projects:'folder', settings:'gear'}[t]);
 }
 function clearFilters() { Object.assign(ui, {q:'', cat:'', loc:'', status:'', proj:''}); $('#q').value = ''; render(); }
 
@@ -1451,21 +1626,30 @@ function applyTheme() {
   let t = null; try { t = localStorage.getItem(THEME_KEY); } catch {}
   if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
   const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  $('#themeBtn').innerHTML = icon(dark ? 'sun' : 'moon');
+  $$('.theme-toggle').forEach(b => {
+    if (b.classList.contains('switch')) { b.setAttribute('aria-checked', dark); b.innerHTML = `<span class="knob">${icon(dark ? 'moon' : 'sun')}</span>`; }
+    else b.innerHTML = icon(dark ? 'sun' : 'moon');
+  });
 }
 
 function init() {
   $('#logo').innerHTML = icon('chip');
   $$('[data-i]').forEach(e => { if (ICONS[e.dataset.i]) e.outerHTML = icon(e.dataset.i); });
   applyTheme();
+  setTab(ui.tab);
 
-  $('#themeBtn').onclick = () => {
+  $$('.theme-toggle').forEach(b => b.onclick = () => {
     const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
     try { localStorage.setItem(THEME_KEY, dark ? 'light' : 'dark'); } catch {}
     applyTheme();
-  };
+  });
   $$('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
   $('#addBtn').onclick = () => openItemForm();
+  $('#restockCard').onclick = (e) => {
+    if (!e.target.closest('[data-act=restock]')) return;
+    Object.assign(ui, {q:'', cat:'', loc:'', proj:'', status:'restock'}); $('#q').value = '';
+    setTab('items'); render();
+  };
   $('#addProjBtn').onclick = async () => { const v = await ask({title:'Proyek baru', input:'', ok:'Tambah'}); if (v) { if (!allProjects().includes(v)) state.projects.push(v); save(); render(); } };
 
   // dropdown
