@@ -1,0 +1,15 @@
+# Data inventaris (jangan di-commit)
+data/
+*.db
+*.db-wal
+*.db-shm
+Backup-Inventaris_*.json
+Inventaris-Elektronik_*.*
+
+# Rahasia
+.env
+
+.claude/
+node_modules/
+.DS_Store
+Thumbs.db

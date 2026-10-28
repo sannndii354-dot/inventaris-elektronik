@@ -1,0 +1,14 @@
+{
+  "name": "inventaris-elektronik",
+  "version": "1.0.0",
+  "description": "Aplikasi web inventaris komponen elektronik & mikrokontroler dengan ekspor Excel, PDF, dan Word",
+  "type": "module",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

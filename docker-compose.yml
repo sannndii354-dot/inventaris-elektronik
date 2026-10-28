@@ -1,0 +1,15 @@
+services:
+  inventaris:
+    build: .
+    container_name: inventaris-elektronik
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      APP_USER: ${APP_USER:-admin}
+      APP_PASSWORD: ${APP_PASSWORD:-}
+    volumes:
+      - inventaris-data:/data
+
+volumes:
+  inventaris-data:

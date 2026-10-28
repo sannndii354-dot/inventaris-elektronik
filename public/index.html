@@ -1,0 +1,1576 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventaris Elektronik</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' rx='2' fill='%230f766e'/%3E%3Cpath d='M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4' stroke='%230f766e' stroke-width='2'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js" defer></script>
+<style>
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --border-strong:#c5ccd5;
+  --text:#18202a; --muted:#5d6978; --faint:#8a95a3;
+  --accent:#0f766e; --accent-hover:#0d625b; --accent-ink:#ffffff; --accent-soft:#e3f3f1;
+  --ok:#15803d; --ok-soft:#e6f4ea; --warn:#a85a07; --warn-soft:#fdf1df; --danger:#b42318; --danger-soft:#fdeceb;
+  --info:#1d4ed8; --info-soft:#e8eefc;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --shadow-lg:0 12px 32px rgba(16,24,40,.18);
+  --radius:10px;
+  --mono:ui-monospace,"Cascadia Mono","Consolas","SFMono-Regular",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1419; --surface:#171d24; --surface-2:#1e262f; --border:#2a333e; --border-strong:#3a4552;
+    --text:#e6ebf0; --muted:#9aa6b4; --faint:#6d7987;
+    --accent:#2dd4bf; --accent-hover:#5eead4; --accent-ink:#06201d; --accent-soft:#12332f;
+    --ok:#4ade80; --ok-soft:#14301f; --warn:#fbbf24; --warn-soft:#3a2c0e; --danger:#f87171; --danger-soft:#3b1717;
+    --info:#93b4fd; --info-soft:#1a2540;
+    --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#171d24; --surface-2:#1e262f; --border:#2a333e; --border-strong:#3a4552;
+  --text:#e6ebf0; --muted:#9aa6b4; --faint:#6d7987;
+  --accent:#2dd4bf; --accent-hover:#5eead4; --accent-ink:#06201d; --accent-soft:#12332f;
+  --ok:#4ade80; --ok-soft:#14301f; --warn:#fbbf24; --warn-soft:#3a2c0e; --danger:#f87171; --danger-soft:#3b1717;
+  --info:#93b4fd; --info-soft:#1a2540;
+  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+svg{width:16px;height:16px;flex:none}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+header.top{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.top-inner{display:flex;align-items:center;gap:12px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:16px;letter-spacing:-.01em;margin-right:auto;min-width:0}
+.brand .logo{width:32px;height:32px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.brand .logo svg{width:20px;height:20px}
+.brand small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.brand-text{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid var(--border);border-radius:99px;white-space:nowrap}
+.sync .dot{background:var(--faint)}
+.sync.ok .dot{background:var(--ok)}
+.sync.saving .dot{background:var(--warn)}
+.sync.error{color:var(--danger);border-color:var(--danger)}
+.sync.error .dot{background:var(--danger)}
+nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);background:var(--surface)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tab{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-weight:550;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab .count{font-size:11px;background:var(--surface-2);color:var(--muted);padding:1px 7px;border-radius:99px}
+main{padding:20px 0 60px}
+section.view{display:none}
+section.view.active{display:block}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface);cursor:pointer;font-weight:550;white-space:nowrap;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.danger{color:var(--danger);border-color:var(--danger-soft);background:var(--danger-soft)}
+.btn.danger:hover{border-color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{height:30px;padding:0 10px;font-size:13px}
+.icon-btn{width:32px;height:32px;padding:0;display:inline-grid;place-items:center;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.icon-btn.danger:hover{color:var(--danger);background:var(--danger-soft)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- dropdown ---------- */
+.dd{position:relative}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:250px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);padding:6px;display:none;z-index:30}
+.dd.open .dd-menu{display:block}
+.dd-menu button{display:flex;width:100%;align-items:center;gap:10px;padding:9px 10px;border:0;background:none;border-radius:7px;cursor:pointer;text-align:left}
+.dd-menu button:hover{background:var(--surface-2)}
+.dd-menu button small{display:block;color:var(--muted);font-size:12px}
+.dd-menu .sep{height:1px;background:var(--border);margin:6px 4px}
+.dd-menu .label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 10px 4px;font-weight:600}
+.ft{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex:none}
+.ft.xl{background:#1d7044}.ft.pdf{background:#c2362b}.ft.doc{background:#2b5797}.ft.json{background:#6b7280}
+.seg{display:flex;background:var(--surface-2);border-radius:8px;padding:3px;gap:3px;margin:2px 4px 6px}
+.seg label{flex:1;text-align:center;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;color:var(--muted)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--surface);color:var(--text);box-shadow:var(--shadow);font-weight:600}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:left;cursor:pointer;transition:border-color .12s,transform .12s}
+.stat:hover{border-color:var(--border-strong)}
+.stat.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.stat .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.stat .v{font-size:24px;font-weight:650;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat.warn .v{color:var(--warn)} .stat.danger .v{color:var(--danger)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* ---------- toolbar ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;padding:14px;border-bottom:1px solid var(--border);align-items:center}
+.search{position:relative;flex:1 1 260px;min-width:0}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint)}
+.search input[type=search]{padding-left:34px;padding-right:30px}
+.search kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:11px var(--mono);color:var(--faint);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+input[type=text],input[type=number],input[type=url],input[type=search],select,textarea{width:100%;height:36px;border:1px solid var(--border-strong);background:var(--surface);border-radius:8px;padding:0 10px;outline:none}
+textarea{height:auto;min-height:70px;padding:8px 10px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.toolbar select{width:auto;min-width:140px;flex:0 1 auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border)}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:99px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+.chip:hover{border-color:var(--border-strong);color:var(--text)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.75}
+.result-line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+
+/* ---------- table ---------- */
+.table-wrap{overflow-x:auto}
+table.grid{width:100%;border-collapse:collapse}
+.grid th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+.grid th[data-sort]{cursor:pointer}
+.grid th[data-sort]:hover{color:var(--text)}
+.grid th .arr{opacity:.4;margin-left:3px}
+.grid th.sorted .arr{opacity:1;color:var(--accent)}
+.grid td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.grid tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}
+.grid tbody tr:last-child td{border-bottom:0}
+.code{font-family:var(--mono);font-size:12px;background:var(--surface-2);padding:2px 6px;border-radius:5px;white-space:nowrap}
+.name{font-weight:600;cursor:pointer}
+.name:hover{color:var(--accent)}
+.sub{font-size:12px;color:var(--muted)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.cat-pill{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--info-soft);color:var(--info);white-space:nowrap}
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:5px;background:var(--surface-2);border:1px solid var(--border);margin:0 3px 3px 0;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.badge.aman{background:var(--ok-soft);color:var(--ok)}
+.badge.menipis{background:var(--warn-soft);color:var(--warn)}
+.badge.habis{background:var(--danger-soft);color:var(--danger)}
+.badge.masuk,.badge.baru{background:var(--ok-soft);color:var(--ok)}
+.badge.keluar{background:var(--warn-soft);color:var(--warn)}
+.badge.koreksi{background:var(--info-soft);color:var(--info)}
+.badge.hapus{background:var(--danger-soft);color:var(--danger)}
+.stock{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.stock b{min-width:34px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums}
+.stock .u{font-size:12px;color:var(--muted);margin-right:4px}
+.step{width:24px;height:24px;border-radius:6px;border:1px solid var(--border-strong);background:var(--surface);cursor:pointer;display:grid;place-items:center;padding:0;color:var(--muted)}
+.step:hover{color:var(--accent);border-color:var(--accent)}
+.step svg{width:13px;height:13px}
+.actions{white-space:nowrap;text-align:right}
+.empty{padding:56px 20px;text-align:center;color:var(--muted)}
+.empty .big{width:56px;height:56px;margin:0 auto 14px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.empty .big svg{width:28px;height:28px}
+.empty h3{color:var(--text);margin:0 0 6px;font-size:17px}
+.empty .row{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+
+/* ---------- projects / settings ---------- */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.proj{padding:16px}
+.proj h3{margin:0;font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.proj .meta{font-size:12.5px;color:var(--muted);margin:4px 0 12px}
+.proj ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+.proj li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.proj li:last-child{border-bottom:0}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.section-head h2{margin:0;font-size:18px}
+.section-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.set{padding:16px}
+.set h3{margin:0 0 4px;font-size:15px}
+.set p.d{margin:0 0 12px;color:var(--muted);font-size:13px}
+.list{border:1px solid var(--border);border-radius:8px;max-height:300px;overflow:auto}
+.list .li{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-bottom:1px solid var(--border);font-size:13.5px}
+.list .li:last-child{border-bottom:0}
+.list .li span.grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list .li .n{font-size:12px;color:var(--muted)}
+.add-row{display:flex;gap:8px;margin-top:10px}
+.btn-col{display:flex;flex-direction:column;gap:8px}
+.btn-col .btn{justify-content:flex-start}
+.note{font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:10px 12px;margin-top:12px}
+.backup-bar{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:16px;padding:10px 14px;border:1px dashed var(--border-strong);border-radius:var(--radius)}
+.backup-bar.stale{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+
+/* ---------- dialog ---------- */
+dialog{border:0;border-radius:14px;padding:0;background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
+dialog.small{width:min(440px,calc(100vw - 24px))}
+dialog::backdrop{background:rgba(10,16,24,.5);backdrop-filter:blur(2px)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
+.dlg-head h2{margin:0;font-size:17px}
+.dlg-body{padding:18px 20px}
+.dlg-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface)}
+.dlg-foot .left{margin-right:auto;display:flex;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 14px}
+.f{display:flex;flex-direction:column;gap:5px;grid-column:span 3;min-width:0}
+.f.s2{grid-column:span 2}.f.s6{grid-column:span 6}.f.s4{grid-column:span 4}
+.f label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.f label .req{color:var(--danger)}
+.f .hint{font-size:11.5px;color:var(--faint)}
+.fieldset-title{grid-column:span 6;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700;margin-top:6px;padding-top:10px;border-top:1px solid var(--border)}
+.fieldset-title:first-child{border-top:0;padding-top:0;margin-top:0}
+.sym{display:flex;gap:4px;margin-top:2px}
+.sym button{height:24px;min-width:28px;border:1px solid var(--border);background:var(--surface-2);border-radius:5px;cursor:pointer;font-size:12.5px;padding:0 6px}
+.sym button:hover{border-color:var(--accent);color:var(--accent)}
+.tags-input{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:36px;border:1px solid var(--border-strong);border-radius:8px;padding:4px 6px;background:var(--surface)}
+.tags-input:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tags-input input{border:0!important;box-shadow:none!important;height:26px;flex:1;min-width:140px;padding:0 4px}
+.tchip{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:2px 4px 2px 8px;font-size:12.5px;font-weight:600}
+.tchip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 2px;line-height:1;font-size:15px}
+.mv-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.mv-seg label{border:1px solid var(--border-strong);border-radius:9px;padding:12px;cursor:pointer;text-align:center;font-weight:600}
+.mv-seg input{position:absolute;opacity:0;pointer-events:none}
+.mv-seg label:has(input[value=masuk]:checked){border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.mv-seg label:has(input[value=keluar]:checked){border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.preview{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border-radius:9px;background:var(--surface-2);margin-top:14px;font-size:14px}
+.preview b{font-size:20px;font-variant-numeric:tabular-nums}
+.dl{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:13.5px}
+.dl dt{color:var(--muted)}
+.dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.detail-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap}
+.detail-head h3{margin:4px 0 2px;font-size:19px}
+.big-stock{text-align:right}
+.big-stock .v{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.mini-log{margin-top:18px}
+.mini-log h4{margin:0 0 8px;font-size:13px;color:var(--muted)}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:calc(100vw - 32px)}
+.toast{background:var(--text);color:var(--bg);padding:10px 14px;border-radius:9px;box-shadow:var(--shadow-lg);font-size:13.5px;animation:tin .18s ease-out;max-width:380px}
+.toast.danger{background:var(--danger);color:#fff}
+.toast.warn{background:var(--warn);color:#fff}
+@keyframes tin{from{transform:translateY(8px);opacity:0}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1100px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:900px){
+  .grid thead{display:none}
+  .grid,.grid tbody,.grid tr,.grid td{display:block;width:100%}
+  .grid tr{padding:12px 14px;border-bottom:1px solid var(--border);position:relative}
+  .grid td{border:0;padding:3px 0;display:flex;gap:10px}
+  .grid td::before{content:attr(data-label);flex:0 0 84px;font-size:12px;color:var(--faint)}
+  .grid td.actions{position:absolute;top:8px;right:8px;width:auto;padding:0}
+  .grid td.actions::before{content:none}
+  .grid td[data-label="Kode"]::before{content:none}
+}
+@media (max-width:760px){
+  .wrap{padding:0 16px}
+  .brand small{display:none}
+  .top-inner .btn .lbl{display:none}
+  .top-inner .btn{padding:0 10px}
+  .sync .t{display:none}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .stat{padding:10px 12px}.stat .v{font-size:20px}
+  .toolbar select{flex:1 1 calc(50% - 5px);min-width:0}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .f,.f.s2,.f.s4,.f.s6,.fieldset-title{grid-column:span 2}
+  .f.half{grid-column:span 1}
+  .dl{grid-template-columns:1fr}
+  .dl dt{margin-top:6px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand">
+      <div class="logo" id="logo"></div>
+      <div class="brand-text">Inventaris Elektronik<small>Komponen &amp; mikrokontroler</small></div>
+    </div>
+    <span class="sync" id="syncPill" hidden><span class="dot"></span><span class="t"></span></span>
+    <button class="icon-btn" id="themeBtn" title="Ganti tema terang/gelap" aria-label="Ganti tema"></button>
+    <div class="dd" id="exportDD">
+      <button class="btn" data-dd="exportDD" aria-haspopup="true"><span data-i="download"></span><span class="lbl">Ekspor</span></button>
+      <div class="dd-menu" role="menu">
+        <div class="label">Cakupan data</div>
+        <div class="seg">
+          <label><input type="radio" name="scope" value="filter" checked>Hasil filter <span id="scopeN"></span></label>
+          <label><input type="radio" name="scope" value="all">Semua barang</label>
+        </div>
+        <div class="sep"></div>
+        <button data-export="xlsx"><span class="ft xl">XLS</span><span>Excel (.xlsx)<small>Inventaris, stok menipis, ringkasan, riwayat</small></span></button>
+        <button data-export="pdf"><span class="ft pdf">PDF</span><span>PDF<small>Laporan siap cetak + daftar belanja</small></span></button>
+        <button data-export="docx"><span class="ft doc">DOC</span><span>Word (.docx)<small>Laporan yang bisa diedit</small></span></button>
+      </div>
+    </div>
+    <button class="btn primary" id="addBtn"><span data-i="plus"></span><span class="lbl">Tambah barang</span></button>
+  </div>
+</header>
+<nav class="tabs">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" data-tab="items" aria-selected="true"><span data-i="box"></span>Barang <span class="count" id="tcItems">0</span></button>
+    <button class="tab" role="tab" data-tab="logs" aria-selected="false"><span data-i="history"></span>Riwayat <span class="count" id="tcLogs">0</span></button>
+    <button class="tab" role="tab" data-tab="projects" aria-selected="false"><span data-i="folder"></span>Proyek <span class="count" id="tcProj">0</span></button>
+    <button class="tab" role="tab" data-tab="settings" aria-selected="false"><span data-i="gear"></span>Pengaturan &amp; Data</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <!-- ========== ITEMS ========== -->
+  <section class="view active" id="view-items">
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <div class="toolbar">
+        <div class="search"><span data-i="search"></span><input type="search" id="q" placeholder="Cari nama, kode, nilai, part number, lokasi…" autocomplete="off"><kbd>/</kbd></div>
+        <select id="fLoc" aria-label="Filter lokasi"></select>
+        <select id="fStatus" aria-label="Filter status">
+          <option value="">Semua status</option><option value="aman">Aman</option><option value="menipis">Menipis</option><option value="habis">Habis</option>
+        </select>
+        <select id="fProj" aria-label="Filter proyek"></select>
+      </div>
+      <div class="chips" id="catChips"></div>
+      <div id="itemsBody"></div>
+    </div>
+    <div class="backup-bar" id="backupBar"></div>
+  </section>
+
+  <!-- ========== LOGS ========== -->
+  <section class="view" id="view-logs">
+    <div class="section-head">
+      <div><h2>Riwayat stok</h2><p>Setiap barang masuk, keluar, koreksi, dan penghapusan tercatat di sini.</p></div>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <div class="search"><span data-i="search"></span><input type="search" id="lq" placeholder="Cari barang, proyek, catatan…"></div>
+        <select id="lType" aria-label="Filter jenis">
+          <option value="">Semua jenis</option><option value="baru">Barang baru</option><option value="masuk">Masuk</option><option value="keluar">Keluar</option><option value="koreksi">Koreksi</option><option value="hapus">Dihapus</option>
+        </select>
+      </div>
+      <div id="logsBody"></div>
+    </div>
+  </section>
+
+  <!-- ========== PROJECTS ========== -->
+  <section class="view" id="view-projects">
+    <div class="section-head">
+      <div><h2>Proyek</h2><p>Komponen yang ditandai untuk proyek dan jumlah yang sudah dipakai.</p></div>
+      <button class="btn" id="addProjBtn"><span data-i="plus"></span>Proyek baru</button>
+    </div>
+    <div id="projBody"></div>
+  </section>
+
+  <!-- ========== SETTINGS ========== -->
+  <section class="view" id="view-settings">
+    <div class="settings-grid">
+      <div class="card set">
+        <h3>Kategori</h3><p class="d">Kode barang dibuat otomatis dari kategori (mis. MCU-001).</p>
+        <div class="list" id="catList"></div>
+        <div class="add-row"><input type="text" id="newCat" placeholder="Kategori baru"><button class="btn" id="addCatBtn">Tambah</button></div>
+      </div>
+      <div class="card set">
+        <h3>Lokasi penyimpanan</h3><p class="d">Rak, laci, kotak organizer, dsb. Ganti nama akan memperbarui semua barang.</p>
+        <div class="list" id="locList"></div>
+        <div class="add-row"><input type="text" id="newLoc" placeholder="mis. Rak A / Laci 2"><button class="btn" id="addLocBtn">Tambah</button></div>
+      </div>
+      <div class="card set">
+        <h3>Proyek</h3><p class="d">Ganti nama proyek akan memperbarui barang dan riwayat.</p>
+        <div class="list" id="projList"></div>
+        <div class="add-row"><input type="text" id="newProj" placeholder="Nama proyek"><button class="btn" id="addProjBtn2">Tambah</button></div>
+      </div>
+      <div class="card set">
+        <h3>Data &amp; backup</h3>
+        <p class="d" id="setDataDesc"></p>
+        <div class="btn-col">
+          <button class="btn" id="backupBtn"><span class="ft json">JSON</span>Backup lengkap (.json)</button>
+          <button class="btn" id="restoreBtn"><span class="ft json">JSON</span>Pulihkan dari backup…</button>
+          <button class="btn" id="importXlsBtn"><span class="ft xl">XLS</span>Impor dari Excel…</button>
+          <button class="btn" id="templateBtn"><span class="ft xl">XLS</span>Unduh template Excel kosong</button>
+          <button class="btn" id="sampleBtn"><span data-i="sparkle"></span>Tambahkan data contoh</button>
+          <button class="btn danger" id="resetBtn"><span data-i="trash"></span>Hapus semua data</button>
+        </div>
+        <div class="note" id="dataInfo"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- hidden inputs & datalists -->
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+<input type="file" id="fileXls" accept=".xlsx,.xls,.csv" hidden>
+<datalist id="dlLoc"></datalist><datalist id="dlProj"></datalist>
+<datalist id="dlPkg"><option>DIP-8</option><option>DIP-14</option><option>DIP-16</option><option>DIP-28</option><option>DIP-40</option><option>TO-92</option><option>TO-220</option><option>SOT-23</option><option>SOIC-8</option><option>TQFP-32</option><option>SMD 0603</option><option>SMD 0805</option><option>SMD 1206</option><option>Through-hole</option><option>Modul</option><option>Board</option></datalist>
+<datalist id="dlUnit"><option>pcs</option><option>set</option><option>pack</option><option>meter</option><option>roll</option><option>lembar</option></datalist>
+
+<!-- ========== ITEM FORM ========== -->
+<dialog id="itemDlg">
+  <form id="itemForm" method="dialog" autocomplete="off">
+    <div class="dlg-head"><h2 id="itemDlgTitle">Tambah barang</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><span data-i="x"></span></button></div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div class="fieldset-title">Identitas</div>
+        <div class="f s4"><label for="f_name">Nama barang <span class="req">*</span></label><input type="text" id="f_name" required placeholder="mis. ESP32 DevKit V1, Resistor 10kΩ"></div>
+        <div class="f s2"><label for="f_code">Kode</label><input type="text" id="f_code" class="mono" placeholder="Otomatis"></div>
+        <div class="f"><label for="f_category">Kategori <span class="req">*</span></label><select id="f_category"></select></div>
+        <div class="f"><label for="f_partNumber">Part number / chip</label><input type="text" id="f_partNumber" placeholder="mis. ATmega328P, NE555P"></div>
+
+        <div class="fieldset-title">Spesifikasi teknis</div>
+        <div class="f s2"><label for="f_value">Nilai</label><input type="text" id="f_value" placeholder="10kΩ, 100µF, 16MHz">
+          <div class="sym" data-target="f_value"><button type="button">Ω</button><button type="button">µ</button><button type="button">±</button><button type="button">°</button></div></div>
+        <div class="f s2"><label for="f_package">Package</label><input type="text" id="f_package" list="dlPkg" placeholder="DIP-8, TO-220, Modul"></div>
+        <div class="f s2"><label for="f_voltage">Tegangan / rating</label><input type="text" id="f_voltage" placeholder="3.3V, 5V, 1/4W, 25V"></div>
+        <div class="f s6"><label for="f_specs">Detail spesifikasi</label><textarea id="f_specs" rows="2" placeholder="Fitur penting, pinout, protokol (I2C/SPI/UART), toleransi, dll."></textarea></div>
+        <div class="f s6"><label for="f_datasheet">Link datasheet</label><input type="url" id="f_datasheet" placeholder="https://…"></div>
+
+        <div class="fieldset-title">Stok &amp; lokasi</div>
+        <div class="f s2 half"><label for="f_qty">Jumlah</label><input type="number" id="f_qty" min="0" step="1" value="0"></div>
+        <div class="f s2 half"><label for="f_unit">Satuan</label><input type="text" id="f_unit" list="dlUnit" value="pcs"></div>
+        <div class="f s2"><label for="f_minStock">Stok minimum</label><input type="number" id="f_minStock" min="0" step="1" value="0"><span class="hint">Peringatan muncul bila stok ≤ angka ini</span></div>
+        <div class="f s4"><label for="f_location">Lokasi (rak / laci / kotak)</label><input type="text" id="f_location" list="dlLoc" placeholder="mis. Rak A / Laci 2"></div>
+        <div class="f s2"><label for="f_slot">Slot / kompartemen</label><input type="text" id="f_slot" placeholder="mis. Slot 5"></div>
+
+        <div class="fieldset-title">Proyek &amp; catatan</div>
+        <div class="f s6"><label for="f_projInput">Dipakai / dialokasikan untuk proyek</label>
+          <div class="tags-input" id="f_tags"><input type="text" id="f_projInput" list="dlProj" placeholder="Ketik nama proyek lalu Enter"></div></div>
+        <div class="f s6"><label for="f_notes">Catatan</label><textarea id="f_notes" rows="2" placeholder="Kondisi, sumber pembelian, dsb."></textarea></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost" data-close>Batal</button>
+      <button type="submit" class="btn primary" id="itemSaveBtn">Simpan</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ========== STOCK MOVE ========== -->
+<dialog id="moveDlg" class="small">
+  <form id="moveForm" method="dialog" autocomplete="off">
+    <div class="dlg-head"><h2>Ubah stok</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><span data-i="x"></span></button></div>
+    <div class="dlg-body">
+      <div style="margin-bottom:12px"><span class="code" id="mvCode"></span> <b id="mvName"></b></div>
+      <div class="mv-seg">
+        <label><input type="radio" name="mvType" value="keluar" checked>Ambil / keluar</label>
+        <label><input type="radio" name="mvType" value="masuk">Tambah / masuk</label>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="f" style="grid-column:span 1"><label for="mvQty">Jumlah</label><input type="number" id="mvQty" min="1" step="1" value="1"></div>
+        <div class="f" style="grid-column:span 1"><label for="mvProj">Untuk proyek</label><input type="text" id="mvProj" list="dlProj" placeholder="(opsional)"></div>
+        <div class="f" style="grid-column:span 2"><label for="mvNote">Catatan</label><input type="text" id="mvNote" placeholder="mis. beli di toko X, rusak, dipinjam"></div>
+      </div>
+      <div class="preview" id="mvPreview"></div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost" data-close>Batal</button>
+      <button type="submit" class="btn primary">Simpan</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ========== DETAIL ========== -->
+<dialog id="detailDlg">
+  <div class="dlg-head"><h2>Detail barang</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><span data-i="x"></span></button></div>
+  <div class="dlg-body" id="detailBody"></div>
+  <div class="dlg-foot">
+    <div class="left">
+      <button type="button" class="btn danger" id="dDelete"><span data-i="trash"></span>Hapus</button>
+      <button type="button" class="btn" id="dDup"><span data-i="copy"></span>Duplikat</button>
+    </div>
+    <button type="button" class="btn" id="dMove"><span data-i="swap"></span>Ubah stok</button>
+    <button type="button" class="btn primary" id="dEdit"><span data-i="edit"></span>Edit</button>
+  </div>
+</dialog>
+
+<!-- ========== CONFIRM / PROMPT ========== -->
+<dialog id="askDlg" class="small">
+  <form id="askForm" method="dialog">
+    <div class="dlg-head"><h2 id="askTitle"></h2></div>
+    <div class="dlg-body"><p id="askMsg" style="margin:0 0 10px"></p><input type="text" id="askInput"></div>
+    <div class="dlg-foot"><button type="button" class="btn ghost" id="askCancel">Batal</button><button type="submit" class="btn primary" id="askOk">OK</button></div>
+  </form>
+</dialog>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   Konstanta & util
+   ========================================================= */
+const STORE_KEY = 'inventaris-elektronik-v1';
+const THEME_KEY = 'inventaris-elektronik-theme';
+const DEFAULT_CATEGORIES = ['Mikrokontroler','Development Board','Sensor','Modul','Display','Resistor','Kapasitor','Induktor','Dioda','Transistor','IC','Regulator & Power','Baterai','LED','Switch & Tombol','Relay','Motor & Aktuator','Konektor','Kabel & Jumper','Tools','Lainnya'];
+const PREFIX = {'Mikrokontroler':'MCU','Development Board':'DEV','Sensor':'SNS','Modul':'MOD','Display':'DSP','Resistor':'RES','Kapasitor':'CAP','Induktor':'IND','Dioda':'DIO','Transistor':'TRN','IC':'IC','Regulator & Power':'PWR','Baterai':'BAT','LED':'LED','Switch & Tombol':'SW','Relay':'RLY','Motor & Aktuator':'ACT','Konektor':'CON','Kabel & Jumper':'CBL','Tools':'TLS','Lainnya':'OTH'};
+const FIELDS = [
+  ['code','Kode',12],['name','Nama',30],['category','Kategori',18],['value','Nilai',12],['partNumber','Part Number',16],
+  ['package','Package',12],['voltage','Tegangan/Rating',14],['specs','Spesifikasi',40],['qty','Jumlah',9],['unit','Satuan',8],
+  ['minStock','Stok Minimum',12],['location','Lokasi',20],['slot','Kotak/Slot',12],['projects','Proyek',24],
+  ['datasheet','Datasheet',30],['notes','Catatan',30]
+];
+const STATUS_LABEL = {aman:'Aman', menipis:'Menipis', habis:'Habis'};
+const TYPE_LABEL = {baru:'Barang baru', masuk:'Masuk', keluar:'Keluar', koreksi:'Koreksi', hapus:'Dihapus'};
+
+const ICONS = {
+  chip:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
+  download:'<path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  swap:'<path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  box:'<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>',
+  history:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+  folder:'<path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  sparkle:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  alert:'<path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>'
+};
+const icon = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const nowISO = () => new Date().toISOString();
+const num = (v, d=0) => { const n = Number(String(v ?? '').replace(',', '.')); return Number.isFinite(n) ? n : d; };
+const fmtNum = (n) => new Intl.NumberFormat('id-ID').format(n);
+const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '—';
+const fmtDateTime = (iso) => iso ? new Date(iso).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '—';
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const uniqSorted = (arr) => [...new Set(arr.map(s => String(s||'').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'id', {numeric:true}));
+const specLine = (it) => [it.value, it.package, it.voltage].filter(Boolean).join(' · ');
+const locLine = (it) => [it.location, it.slot].filter(Boolean).join(' · ');
+
+/* =========================================================
+   State & penyimpanan
+   ========================================================= */
+let storageOk = true;
+function normItem(i) {
+  return {
+    id: i.id || uid(), code: String(i.code||'').trim(), name: String(i.name||'').trim(), category: i.category || 'Lainnya',
+    value: i.value||'', partNumber: i.partNumber||'', package: i.package||'', voltage: i.voltage||'', specs: i.specs||'', datasheet: i.datasheet||'',
+    qty: Math.max(0, Math.round(num(i.qty))), unit: i.unit || 'pcs', minStock: Math.max(0, Math.round(num(i.minStock))),
+    location: i.location||'', slot: i.slot||'',
+    projects: Array.isArray(i.projects) ? i.projects.filter(Boolean) : String(i.projects||'').split(/[,;]/).map(s=>s.trim()).filter(Boolean),
+    notes: i.notes||'', createdAt: i.createdAt || nowISO(), updatedAt: i.updatedAt || nowISO()
+  };
+}
+function normalize(s) {
+  s = s || {};
+  return {
+    items: Array.isArray(s.items) ? s.items.map(normItem) : [],
+    logs: Array.isArray(s.logs) ? s.logs : [],
+    categories: Array.isArray(s.categories) && s.categories.length ? s.categories : [...DEFAULT_CATEGORIES],
+    locations: Array.isArray(s.locations) ? s.locations : [],
+    projects: Array.isArray(s.projects) ? s.projects : [],
+    meta: Object.assign({lastBackup: null}, s.meta || {})
+  };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    return normalize(raw ? JSON.parse(raw) : null);
+  } catch (e) { storageOk = false; return normalize(null); }
+}
+function save() {
+  if (mode === 'server') return scheduleSync();
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); storageOk = true; }
+  catch (e) { if (storageOk) toast('Gagal menyimpan ke browser. Segera buat backup JSON!', 'danger'); storageOk = false; }
+}
+let state = normalize(null);
+
+/* =========================================================
+   Mode server: sinkronisasi dengan API (server.js)
+   'local'  = file dibuka langsung / hosting statis, data di localStorage
+   'server' = data bersama di server, dikirim sebagai selisih (diff)
+   ========================================================= */
+const SETTING_KEYS = ['categories', 'locations', 'projects', 'meta'];
+let mode = 'local', serverRev = 0, synced = null, syncTimer = null, syncing = false, syncAgain = false;
+
+const snap = (s) => ({
+  items: new Map(s.items.map(i => [i.id, JSON.stringify(i)])),
+  logs: new Map(s.logs.map(l => [l.id, JSON.stringify(l)])),
+  settings: Object.fromEntries(SETTING_KEYS.map(k => [k, JSON.stringify(s[k])]))
+});
+function pendingChanges() {
+  const cur = snap(state), ch = {items:{upsert:[], remove:[]}, logs:{upsert:[], remove:[]}, settings:{}};
+  let n = 0;
+  for (const coll of ['items', 'logs']) {
+    state[coll].forEach(x => { if (synced[coll].get(x.id) !== cur[coll].get(x.id)) { ch[coll].upsert.push(x); n++; } });
+    synced[coll].forEach((_, id) => { if (!cur[coll].has(id)) { ch[coll].remove.push(id); n++; } });
+  }
+  SETTING_KEYS.forEach(k => { if (cur.settings[k] !== synced.settings[k]) { ch.settings[k] = state[k]; n++; } });
+  return {ch, cur, n};
+}
+function setSync(kind, detail = '') {
+  const pill = $('#syncPill');
+  pill.hidden = false;
+  pill.className = 'sync ' + kind;
+  const text = {local:'Lokal', ok:'Tersimpan di server', saving:'Menyimpan…', error:'Offline · mencoba lagi'}[kind];
+  pill.querySelector('.t').textContent = text;
+  pill.title = kind === 'local' ? 'Data tersimpan di browser ini saja' : kind === 'error' ? 'Gagal terhubung ke server: ' + detail : 'Data bersama tersimpan di server';
+}
+function scheduleSync() {
+  setSync('saving');
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncNow, 250);
+}
+async function syncNow() {
+  if (syncing) { syncAgain = true; return; }
+  const {ch, cur, n} = pendingChanges();
+  if (!n) { setSync('ok'); return; }
+  syncing = true; setSync('saving');
+  try {
+    const r = await fetch('api/sync', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({baseRev: serverRev}, ch))});
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'HTTP ' + r.status);
+    const res = await r.json();
+    synced = cur; serverRev = res.rev;
+    setSync('ok');
+    if (res.stale) syncAgain = true; // ada perubahan dari pengguna lain, ambil setelah ini
+  } catch (e) {
+    setSync('error', e.message);
+    clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 5000);
+  } finally {
+    syncing = false;
+    if (syncAgain) { syncAgain = false; if (pendingChanges().n) scheduleSync(); else pullState(); }
+  }
+}
+async function fetchState() {
+  const r = await fetch('api/state', {cache:'no-store'});
+  if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), {status: r.status});
+  return r.json();
+}
+async function pullState() {
+  if (syncing || pendingChanges().n) return;
+  try {
+    const data = await fetchState();
+    if (syncing || pendingChanges().n) return;
+    state = normalize(data); serverRev = data.rev; synced = snap(state);
+    render(); setSync('ok');
+  } catch (e) { setSync('error', e.message); }
+}
+async function checkRemote() {
+  if (mode !== 'server' || syncing || document.hidden) return;
+  try {
+    const r = await fetch('api/rev', {cache:'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const {rev} = await r.json();
+    if (rev !== serverRev) await pullState(); else if (!pendingChanges().n) setSync('ok');
+  } catch (e) { setSync('error', e.message); }
+}
+async function boot() {
+  if (location.protocol.startsWith('http')) {
+    try {
+      const data = await fetchState();
+      mode = 'server'; state = normalize(data); serverRev = data.rev || 0; synced = snap(state);
+      setInterval(checkRemote, 10000);
+      document.addEventListener('visibilitychange', checkRemote);
+      window.addEventListener('beforeunload', (e) => { if (syncing || pendingChanges().n) { e.preventDefault(); e.returnValue = ''; } });
+      setSync('ok');
+    } catch (e) {
+      // 404 = hosting statis tanpa server.js, pakai mode lokal. Error lain perlu diketahui pengguna.
+      if (e.status !== 404) toast('Tidak bisa memuat data dari server (' + e.message + '). Sementara memakai data lokal browser ini.', 'danger');
+    }
+  }
+  if (mode === 'local') {
+    state = load(); setSync('local');
+    if (!storageOk) toast('Penyimpanan browser tidak tersedia. Gunakan backup JSON agar data tidak hilang.', 'danger');
+  }
+  render();
+}
+
+const ui = { tab:'items', q:'', cat:'', loc:'', status:'', proj:'', sort:{key:'code', dir:1}, scope:'filter', lq:'', lType:'' };
+
+const byId = (id) => state.items.find(i => i.id === id);
+const statusOf = (it) => it.qty <= 0 ? 'habis' : (it.minStock > 0 && it.qty <= it.minStock ? 'menipis' : 'aman');
+const allLocations = () => uniqSorted([...state.locations, ...state.items.map(i => i.location)]);
+const allProjects = () => uniqSorted([...state.projects, ...state.items.flatMap(i => i.projects), ...state.logs.map(l => l.project)]);
+const allCategories = () => { const extra = state.items.map(i => i.category).filter(c => !state.categories.includes(c)); return [...state.categories, ...uniqSorted(extra)]; };
+
+function prefixOf(cat) {
+  return PREFIX[cat] || (String(cat||'').normalize('NFD').replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase() || 'OTH');
+}
+function nextCode(cat, taken = state.items.map(i => i.code)) {
+  const p = prefixOf(cat), re = new RegExp('^' + p + '-(\\d+)$');
+  let max = 0;
+  taken.forEach(c => { const m = re.exec(c || ''); if (m) max = Math.max(max, +m[1]); });
+  return `${p}-${String(max + 1).padStart(3, '0')}`;
+}
+function addLog(entry) {
+  state.logs.unshift(Object.assign({id: uid(), date: nowISO(), project:'', note:''}, entry));
+  if (state.logs.length > 10000) state.logs.length = 10000;
+}
+
+/* =========================================================
+   Filter & urutkan
+   ========================================================= */
+function filteredItems() {
+  const terms = ui.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const list = state.items.filter(it => {
+    if (ui.cat && it.category !== ui.cat) return false;
+    if (ui.loc && it.location !== ui.loc) return false;
+    if (ui.status && statusOf(it) !== ui.status) return false;
+    if (ui.proj && !it.projects.includes(ui.proj)) return false;
+    if (terms.length) {
+      const hay = [it.code,it.name,it.category,it.value,it.partNumber,it.package,it.voltage,it.specs,it.location,it.slot,it.notes,it.projects.join(' ')].join(' ').toLowerCase();
+      return terms.every(t => hay.includes(t));
+    }
+    return true;
+  });
+  const {key, dir} = ui.sort;
+  const val = (it) => key === 'status' ? ['habis','menipis','aman'].indexOf(statusOf(it)) : key === 'spec' ? specLine(it) : key === 'loc' ? locLine(it) : it[key];
+  return list.sort((a, b) => {
+    const x = val(a), y = val(b);
+    if (typeof x === 'number' && typeof y === 'number') return (x - y) * dir;
+    return String(x||'').localeCompare(String(y||''), 'id', {numeric:true, sensitivity:'base'}) * dir;
+  });
+}
+const exportItems = () => ui.scope === 'all' ? [...state.items].sort((a,b) => a.code.localeCompare(b.code,'id',{numeric:true})) : filteredItems();
+
+/* =========================================================
+   Render
+   ========================================================= */
+function render() {
+  renderStats(); renderFilters(); renderChips(); renderItems(); renderBackupBar();
+  renderLogs(); renderProjects(); renderSettings(); renderDatalists();
+  $('#tcItems').textContent = state.items.length;
+  $('#tcLogs').textContent = state.logs.length;
+  $('#tcProj').textContent = allProjects().length;
+}
+
+function renderStats() {
+  const it = state.items;
+  const low = it.filter(i => statusOf(i) === 'menipis').length, out = it.filter(i => statusOf(i) === 'habis').length;
+  const cats = new Set(it.map(i => i.category)).size;
+  const cards = [
+    {k:'Jenis barang', v:it.length, act:'all', active: !ui.status && !ui.cat && !ui.loc && !ui.proj && !ui.q},
+    {k:'Total unit', v:it.reduce((s,i) => s + i.qty, 0), act:'all'},
+    {k:'Kategori dipakai', v:cats, act:'all'},
+    {k:'Proyek', v:allProjects().length, act:'projects'},
+    {k:'Stok menipis', v:low, act:'menipis', cls:'warn', dot:'var(--warn)', active: ui.status==='menipis'},
+    {k:'Habis', v:out, act:'habis', cls:'danger', dot:'var(--danger)', active: ui.status==='habis'}
+  ];
+  $('#stats').innerHTML = cards.map(c => `<button class="stat ${c.cls||''} ${c.active?'active':''}" data-stat="${c.act}">
+    <div class="k">${c.dot?`<span class="dot" style="background:${c.dot}"></span>`:''}${c.k}</div><div class="v">${fmtNum(c.v)}</div></button>`).join('');
+}
+
+function fillSelect(sel, opts, allLabel, current) {
+  sel.innerHTML = `<option value="">${allLabel}</option>` + opts.map(o => `<option value="${esc(o)}" ${o===current?'selected':''}>${esc(o)}</option>`).join('');
+  if (current && !opts.includes(current)) sel.value = '';
+}
+function renderFilters() {
+  const locs = allLocations(), projs = allProjects();
+  if (ui.loc && !locs.includes(ui.loc)) ui.loc = '';
+  if (ui.proj && !projs.includes(ui.proj)) ui.proj = '';
+  fillSelect($('#fLoc'), locs, 'Semua lokasi', ui.loc);
+  fillSelect($('#fProj'), projs, 'Semua proyek', ui.proj);
+  $('#fStatus').value = ui.status;
+}
+
+function renderChips() {
+  const counts = {};
+  state.items.forEach(i => counts[i.category] = (counts[i.category]||0) + 1);
+  const used = allCategories().filter(c => counts[c]);
+  if (ui.cat && !counts[ui.cat]) ui.cat = '';
+  $('#catChips').style.display = state.items.length ? '' : 'none';
+  $('#catChips').innerHTML = `<button class="chip ${!ui.cat?'on':''}" data-cat="">Semua <span class="n">${state.items.length}</span></button>` +
+    used.map(c => `<button class="chip ${ui.cat===c?'on':''}" data-cat="${esc(c)}">${esc(c)} <span class="n">${counts[c]}</span></button>`).join('');
+}
+
+function sortTh(key, label) {
+  const on = ui.sort.key === key;
+  return `<th data-sort="${key}" class="${on?'sorted':''}">${label}<span class="arr">${on ? (ui.sort.dir > 0 ? '▲' : '▼') : '↕'}</span></th>`;
+}
+function renderItems() {
+  const body = $('#itemsBody');
+  if (!state.items.length) {
+    body.innerHTML = `<div class="empty"><div class="big">${icon('chip')}</div><h3>Inventaris masih kosong</h3>
+      <p>Mulai catat komponen dan mikrokontroler Anda, atau coba dulu dengan data contoh.</p>
+      <div class="row"><button class="btn primary" data-act="new">${icon('plus')}Tambah barang pertama</button>
+      <button class="btn" data-act="sample">${icon('sparkle')}Muat data contoh</button>
+      <button class="btn" data-act="importxls">Impor dari Excel</button></div></div>`;
+    $('#scopeN').textContent = '(0)';
+    return;
+  }
+  const rows = filteredItems();
+  $('#scopeN').textContent = `(${rows.length})`;
+  const filtersOn = ui.q || ui.cat || ui.loc || ui.status || ui.proj;
+  const totalUnits = rows.reduce((s,i) => s + i.qty, 0);
+  let html = `<div class="result-line"><span>Menampilkan <b>${rows.length}</b> dari ${state.items.length} barang · ${fmtNum(totalUnits)} unit</span>
+    ${filtersOn ? `<button class="btn sm ghost" data-act="clearf">${icon('x')}Reset filter</button>` : ''}</div>`;
+  if (!rows.length) {
+    body.innerHTML = html + `<div class="empty"><h3>Tidak ada barang yang cocok</h3><p>Coba kata kunci lain atau reset filter.</p></div>`;
+    return;
+  }
+  html += `<div class="table-wrap"><table class="grid"><thead><tr>
+    ${sortTh('code','Kode')}${sortTh('name','Nama')}${sortTh('category','Kategori')}${sortTh('spec','Spesifikasi')}${sortTh('loc','Lokasi')}${sortTh('qty','Stok')}${sortTh('status','Status')}<th>Proyek</th><th></th>
+  </tr></thead><tbody>`;
+  html += rows.map(it => {
+    const st = statusOf(it);
+    return `<tr data-id="${it.id}">
+      <td data-label="Kode"><span class="code">${esc(it.code)}</span></td>
+      <td data-label="Nama"><div><div class="name" data-act="detail">${esc(it.name)}</div>
+        ${it.partNumber || it.datasheet ? `<div class="sub">${esc(it.partNumber)}${it.partNumber && it.datasheet ? ' · ' : ''}${it.datasheet ? `<a href="${esc(it.datasheet)}" target="_blank" rel="noopener">datasheet</a>` : ''}</div>` : ''}</div></td>
+      <td data-label="Kategori"><span class="cat-pill">${esc(it.category)}</span></td>
+      <td data-label="Spesifikasi">${esc(specLine(it)) || '<span class="sub">—</span>'}</td>
+      <td data-label="Lokasi">${it.location ? `<div>${esc(it.location)}</div>` : '<span class="sub">—</span>'}${it.slot ? `<div class="sub">${esc(it.slot)}</div>` : ''}</td>
+      <td data-label="Stok"><div><div class="stock">
+          <button class="step" data-act="dec" title="Kurangi 1" aria-label="Kurangi 1">${icon('minus')}</button>
+          <b>${fmtNum(it.qty)}</b>
+          <button class="step" data-act="inc" title="Tambah 1" aria-label="Tambah 1">${icon('plus')}</button><span class="u">${esc(it.unit)}</span></div>
+        ${it.minStock ? `<div class="sub">min ${fmtNum(it.minStock)}</div>` : ''}</div></td>
+      <td data-label="Status"><span class="badge ${st}">${STATUS_LABEL[st]}</span></td>
+      <td data-label="Proyek"><div>${it.projects.map(p => `<span class="tag">${esc(p)}</span>`).join('') || '<span class="sub">—</span>'}</div></td>
+      <td class="actions">
+        <button class="icon-btn" data-act="move" title="Ambil / tambah stok" aria-label="Ubah stok">${icon('swap')}</button>
+        <button class="icon-btn" data-act="edit" title="Edit" aria-label="Edit">${icon('edit')}</button>
+        <button class="icon-btn danger" data-act="delete" title="Hapus" aria-label="Hapus">${icon('trash')}</button>
+      </td></tr>`;
+  }).join('');
+  body.innerHTML = html + '</tbody></table></div>';
+}
+
+function renderBackupBar() {
+  const bar = $('#backupBar');
+  if (!state.items.length) { bar.style.display = 'none'; return; }
+  bar.style.display = '';
+  const last = state.meta.lastBackup;
+  const days = last ? Math.floor((Date.now() - new Date(last)) / 864e5) : null;
+  const stale = days === null || days >= 14;
+  bar.classList.toggle('stale', stale);
+  bar.innerHTML = `<span>${stale ? icon('alert') : ''} ${last ? `Backup terakhir: ${fmtDateTime(last)}${days ? ` (${days} hari lalu)` : ''}` : 'Belum pernah backup.'}
+    ${mode === 'server' ? 'Data tersimpan di server dan dipakai bersama.' : storageOk ? 'Data tersimpan otomatis di browser ini.' : '<b>Penyimpanan browser tidak tersedia — data akan hilang saat halaman ditutup!</b>'}</span>
+    <button class="btn sm" data-act="backup">Backup sekarang (.json)</button>`;
+}
+
+function filteredLogs() {
+  const terms = ui.lq.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  return state.logs.filter(l => {
+    if (ui.lType && l.type !== ui.lType) return false;
+    if (terms.length) { const hay = [l.itemCode,l.itemName,l.project,l.note].join(' ').toLowerCase(); return terms.every(t => hay.includes(t)); }
+    return true;
+  });
+}
+function logQty(l) {
+  const sign = l.type === 'keluar' || l.type === 'hapus' ? '−' : l.type === 'koreksi' ? (l.after >= l.before ? '+' : '−') : '+';
+  return `${sign}${fmtNum(Math.abs(l.qty))}`;
+}
+function logRowsHtml(logs, withItem = true) {
+  return logs.map(l => `<tr>
+    <td data-label="Waktu" class="sub" style="white-space:nowrap">${fmtDateTime(l.date)}</td>
+    ${withItem ? `<td data-label="Barang"><div><span class="code">${esc(l.itemCode)}</span> ${esc(l.itemName)}</div></td>` : ''}
+    <td data-label="Jenis"><span class="badge ${l.type}">${TYPE_LABEL[l.type] || l.type}</span></td>
+    <td data-label="Jumlah" class="mono">${logQty(l)}</td>
+    <td data-label="Stok" class="mono sub">${l.before ?? '—'} → ${l.after ?? '—'}</td>
+    <td data-label="Proyek">${l.project ? `<span class="tag">${esc(l.project)}</span>` : '<span class="sub">—</span>'}</td>
+    <td data-label="Catatan" class="sub">${esc(l.note) || '—'}</td></tr>`).join('');
+}
+function renderLogs() {
+  const logs = filteredLogs();
+  if (!state.logs.length) { $('#logsBody').innerHTML = `<div class="empty"><h3>Belum ada riwayat</h3><p>Riwayat akan terisi saat Anda menambah barang atau mengubah stok.</p></div>`; return; }
+  const shown = logs.slice(0, 500);
+  $('#logsBody').innerHTML = `<div class="result-line"><span>${logs.length} catatan${logs.length > 500 ? ' · menampilkan 500 terbaru (semua ikut diekspor ke Excel)' : ''}</span></div>
+    <div class="table-wrap"><table class="grid"><thead><tr><th>Waktu</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Stok</th><th>Proyek</th><th>Catatan</th></tr></thead>
+    <tbody>${logRowsHtml(shown)}</tbody></table></div>`;
+}
+
+function renderProjects() {
+  const projs = allProjects();
+  if (!projs.length) {
+    $('#projBody').innerHTML = `<div class="card"><div class="empty"><div class="big">${icon('folder')}</div><h3>Belum ada proyek</h3>
+      <p>Tandai barang dengan nama proyek di form barang, atau catat pengambilan stok “untuk proyek”.</p></div></div>`;
+    return;
+  }
+  $('#projBody').innerHTML = `<div class="proj-grid">${projs.map(p => {
+    const tagged = state.items.filter(i => i.projects.includes(p));
+    const used = {};
+    state.logs.filter(l => l.project === p).forEach(l => {
+      const d = l.type === 'keluar' ? l.qty : l.type === 'masuk' ? -l.qty : 0;
+      used[l.itemId] = used[l.itemId] || {name: l.itemName, code: l.itemCode, qty: 0};
+      used[l.itemId].qty += d;
+    });
+    const ids = uniqSorted([...tagged.map(i => i.id), ...Object.keys(used)]);
+    const totalUsed = Object.values(used).reduce((s,u) => s + Math.max(0, u.qty), 0);
+    const lines = ids.map(id => {
+      const it = byId(id), u = used[id];
+      const name = it ? it.name : (u ? u.name + ' (dihapus)' : id);
+      const code = it ? it.code : (u ? u.code : '');
+      return `<li><span><span class="code">${esc(code)}</span> ${esc(name)}</span>
+        <span class="sub" style="white-space:nowrap">${u && u.qty > 0 ? `terpakai ${fmtNum(u.qty)} · ` : ''}${it ? `stok ${fmtNum(it.qty)} <span class="badge ${statusOf(it)}">${STATUS_LABEL[statusOf(it)]}</span>` : ''}</span></li>`;
+    }).join('');
+    return `<div class="card proj"><h3>${esc(p)} <button class="btn sm ghost" data-filter-proj="${esc(p)}">Lihat barang</button></h3>
+      <div class="meta">${ids.length} jenis komponen · ${fmtNum(totalUsed)} unit terpakai</div>
+      ${lines ? `<ul>${lines}</ul>` : '<div class="sub">Belum ada komponen.</div>'}</div>`;
+  }).join('')}</div>`;
+}
+
+function listHtml(items, kind, countFn) {
+  if (!items.length) return `<div class="li"><span class="grow sub">Belum ada</span></div>`;
+  return items.map(v => `<div class="li"><span class="grow">${esc(v)}</span><span class="n">${countFn(v)} barang</span>
+    <button class="icon-btn" data-rename="${kind}" data-v="${esc(v)}" title="Ganti nama" aria-label="Ganti nama">${icon('edit')}</button>
+    <button class="icon-btn danger" data-remove="${kind}" data-v="${esc(v)}" title="Hapus" aria-label="Hapus">${icon('trash')}</button></div>`).join('');
+}
+function renderSettings() {
+  $('#catList').innerHTML = listHtml(allCategories(), 'cat', c => state.items.filter(i => i.category === c).length);
+  $('#locList').innerHTML = listHtml(allLocations(), 'loc', l => state.items.filter(i => i.location === l).length);
+  $('#projList').innerHTML = listHtml(allProjects(), 'proj', p => state.items.filter(i => i.projects.includes(p)).length);
+  const where = mode === 'server' ? 'tersimpan di server (bersama)' : (() => { try { return `±${((localStorage.getItem(STORE_KEY) || '').length/1024).toFixed(1)} KB di penyimpanan browser`; } catch { return 'penyimpanan browser tidak tersedia'; } })();
+  $('#setDataDesc').textContent = mode === 'server'
+    ? 'Data tersimpan di server dan dipakai bersama semua pengguna. Backup JSON tetap disarankan secara berkala.'
+    : 'Data tersimpan di browser ini. Buat backup berkala supaya aman jika cache browser dihapus.';
+  $('#dataInfo').innerHTML = `${state.items.length} barang · ${state.logs.length} riwayat · ${where}.<br>
+    Backup terakhir: ${state.meta.lastBackup ? fmtDateTime(state.meta.lastBackup) : 'belum pernah'}.<br>
+    Tip: impor Excel memperbarui barang dengan <b>Kode</b> yang sama dan menambah barang baru untuk kode lain.`;
+}
+
+function renderDatalists() {
+  $('#dlLoc').innerHTML = allLocations().map(l => `<option value="${esc(l)}">`).join('');
+  $('#dlProj').innerHTML = allProjects().map(p => `<option value="${esc(p)}">`).join('');
+}
+
+/* =========================================================
+   Toast & dialog helper
+   ========================================================= */
+function toast(msg, kind = '') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + kind; t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), kind === 'danger' ? 6000 : 3200);
+}
+function ask({title, msg = '', input = null, ok = 'OK', danger = false}) {
+  return new Promise(resolve => {
+    const dlg = $('#askDlg'), inp = $('#askInput');
+    $('#askTitle').textContent = title; $('#askMsg').textContent = msg; $('#askMsg').style.display = msg ? '' : 'none';
+    inp.style.display = input === null ? 'none' : ''; inp.value = input ?? '';
+    const okBtn = $('#askOk'); okBtn.textContent = ok; okBtn.className = 'btn ' + (danger ? 'danger' : 'primary');
+    const done = (v) => { cleanup(); dlg.close(); resolve(v); };
+    const onSubmit = (e) => { e.preventDefault(); done(input === null ? true : inp.value.trim()); };
+    const onCancel = () => done(input === null ? false : null);
+    const cleanup = () => { $('#askForm').removeEventListener('submit', onSubmit); $('#askCancel').removeEventListener('click', onCancel); dlg.removeEventListener('cancel', onCancelEv); };
+    const onCancelEv = (e) => { e.preventDefault(); onCancel(); };
+    $('#askForm').addEventListener('submit', onSubmit);
+    $('#askCancel').addEventListener('click', onCancel);
+    dlg.addEventListener('cancel', onCancelEv);
+    dlg.showModal();
+    if (input !== null) { inp.focus(); inp.select(); } else okBtn.focus();
+  });
+}
+
+/* =========================================================
+   Form barang
+   ========================================================= */
+let editingId = null, formProjects = [];
+function renderFormTags() {
+  const wrap = $('#f_tags'), input = $('#f_projInput');
+  $$('.tchip', wrap).forEach(e => e.remove());
+  formProjects.forEach((p, idx) => {
+    const c = document.createElement('span'); c.className = 'tchip';
+    c.innerHTML = `${esc(p)}<button type="button" aria-label="Hapus ${esc(p)}" data-i="${idx}">×</button>`;
+    wrap.insertBefore(c, input);
+  });
+}
+function addFormTag(v) {
+  v = String(v||'').trim().replace(/,$/, '').trim();
+  if (v && !formProjects.includes(v)) formProjects.push(v);
+  $('#f_projInput').value = ''; renderFormTags();
+}
+function updateCodePlaceholder() {
+  if (!editingId) $('#f_code').placeholder = 'Otomatis: ' + nextCode($('#f_category').value);
+}
+function openItemForm(id = null, preset = null) {
+  editingId = id;
+  const it = id ? byId(id) : normItem(Object.assign({category: ui.cat || allCategories()[0], location: ui.loc, projects: ui.proj ? [ui.proj] : []}, preset || {}));
+  $('#itemDlgTitle').textContent = id ? 'Edit barang' : (preset ? 'Duplikat barang' : 'Tambah barang');
+  $('#f_category').innerHTML = allCategories().map(c => `<option ${c===it.category?'selected':''}>${esc(c)}</option>`).join('');
+  ['name','code','partNumber','value','package','voltage','specs','datasheet','qty','unit','minStock','location','slot','notes'].forEach(k => $('#f_' + k).value = it[k] ?? '');
+  $('#f_code').placeholder = id ? '' : 'Otomatis: ' + nextCode(it.category);
+  formProjects = [...it.projects]; renderFormTags();
+  $('#itemDlg').showModal();
+  setTimeout(() => $('#f_name').focus(), 30);
+}
+function saveItemForm() {
+  const g = (k) => $('#f_' + k).value.trim();
+  if ($('#f_projInput').value.trim()) addFormTag($('#f_projInput').value);
+  const name = g('name');
+  if (!name) { toast('Nama barang wajib diisi', 'warn'); $('#f_name').focus(); return false; }
+  const category = $('#f_category').value;
+  let code = g('code').toUpperCase();
+  if (code && state.items.some(i => i.code.toUpperCase() === code && i.id !== editingId)) { toast(`Kode ${code} sudah dipakai barang lain`, 'warn'); $('#f_code').focus(); return false; }
+  const data = { name, category, partNumber:g('partNumber'), value:g('value'), package:g('package'), voltage:g('voltage'), specs:g('specs'),
+    datasheet:g('datasheet'), qty:Math.max(0, Math.round(num(g('qty')))), unit:g('unit') || 'pcs', minStock:Math.max(0, Math.round(num(g('minStock')))),
+    location:g('location'), slot:g('slot'), notes:g('notes'), projects:[...formProjects] };
+  if (editingId) {
+    const it = byId(editingId); const before = it.qty;
+    Object.assign(it, data, {code: code || it.code, updatedAt: nowISO()});
+    if (before !== it.qty) addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type:'koreksi', qty:Math.abs(it.qty - before), before, after:it.qty, note:'Diubah lewat form edit'});
+    toast('Perubahan disimpan');
+  } else {
+    const it = normItem(Object.assign(data, {code: code || nextCode(category)}));
+    state.items.push(it);
+    addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type:'baru', qty:it.qty, before:0, after:it.qty, note:'Barang ditambahkan'});
+    toast(`${it.code} ditambahkan`);
+  }
+  if (data.location && !state.locations.includes(data.location)) state.locations.push(data.location);
+  data.projects.forEach(p => { if (!state.projects.includes(p)) state.projects.push(p); });
+  save(); render();
+  return true;
+}
+
+/* =========================================================
+   Stok masuk / keluar
+   ========================================================= */
+let movingId = null;
+function openMove(id, type = 'keluar') {
+  const it = byId(id); if (!it) return;
+  movingId = id;
+  $('#mvCode').textContent = it.code; $('#mvName').textContent = it.name;
+  $(`input[name=mvType][value=${type}]`).checked = true;
+  $('#mvQty').value = 1; $('#mvProj').value = ui.proj || ''; $('#mvNote').value = '';
+  updateMovePreview();
+  $('#moveDlg').showModal();
+  setTimeout(() => { $('#mvQty').focus(); $('#mvQty').select(); }, 30);
+}
+function updateMovePreview() {
+  const it = byId(movingId); if (!it) return;
+  const type = $('input[name=mvType]:checked').value, q = Math.max(0, Math.round(num($('#mvQty').value)));
+  const after = type === 'masuk' ? it.qty + q : it.qty - q;
+  const bad = after < 0;
+  $('#mvPreview').innerHTML = `<span class="sub">Stok</span><b>${fmtNum(it.qty)}</b><span>→</span><b style="color:${bad ? 'var(--danger)' : type==='masuk' ? 'var(--ok)' : 'var(--warn)'}">${bad ? 'kurang!' : fmtNum(after)}</b><span class="sub">${esc(it.unit)}</span>`;
+}
+function saveMove() {
+  const it = byId(movingId); if (!it) return true;
+  const type = $('input[name=mvType]:checked').value, q = Math.round(num($('#mvQty').value));
+  if (q <= 0) { toast('Jumlah harus lebih dari 0', 'warn'); return false; }
+  if (type === 'keluar' && q > it.qty) { toast(`Stok hanya ${it.qty} ${it.unit}`, 'warn'); return false; }
+  const before = it.qty, project = $('#mvProj').value.trim();
+  it.qty = type === 'masuk' ? before + q : before - q; it.updatedAt = nowISO();
+  if (project) {
+    if (type === 'keluar' && !it.projects.includes(project)) it.projects.push(project);
+    if (!state.projects.includes(project)) state.projects.push(project);
+  }
+  addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type, qty:q, before, after:it.qty, project, note:$('#mvNote').value.trim()});
+  save(); render();
+  toast(`${it.code}: ${type === 'masuk' ? '+' : '−'}${q} ${it.unit} (stok ${it.qty})`);
+  return true;
+}
+function quickAdjust(id, delta) {
+  const it = byId(id); if (!it) return;
+  if (delta < 0 && it.qty <= 0) { toast('Stok sudah habis', 'warn'); return; }
+  const before = it.qty; it.qty += delta; it.updatedAt = nowISO();
+  const type = delta > 0 ? 'masuk' : 'keluar', last = state.logs[0];
+  if (last && last.quick && last.itemId === id && last.type === type && Date.now() - new Date(last.date) < 60000) {
+    last.qty += Math.abs(delta); last.after = it.qty; last.date = nowISO();
+  } else {
+    addLog({itemId:id, itemCode:it.code, itemName:it.name, type, qty:Math.abs(delta), before, after:it.qty, note:'Penyesuaian cepat', quick:true});
+  }
+  save(); render();
+}
+
+/* =========================================================
+   Detail & hapus
+   ========================================================= */
+let detailId = null;
+function openDetail(id) {
+  const it = byId(id); if (!it) return;
+  detailId = id;
+  const st = statusOf(it);
+  const row = (k, v) => `<dt>${k}</dt><dd>${v || '<span class="sub">—</span>'}</dd>`;
+  const logs = state.logs.filter(l => l.itemId === id).slice(0, 8);
+  $('#detailBody').innerHTML = `<div class="detail-head"><div><span class="code">${esc(it.code)}</span> <span class="cat-pill">${esc(it.category)}</span>
+      <h3>${esc(it.name)}</h3><div class="sub">${esc(specLine(it))}</div></div>
+      <div class="big-stock"><div class="v">${fmtNum(it.qty)} <span class="sub" style="font-size:14px">${esc(it.unit)}</span></div><span class="badge ${st}">${STATUS_LABEL[st]}</span>${it.minStock ? ` <span class="sub">min ${it.minStock}</span>` : ''}</div></div>
+    <dl class="dl">
+      ${row('Part number', esc(it.partNumber))}${row('Nilai', esc(it.value))}${row('Package', esc(it.package))}${row('Tegangan / rating', esc(it.voltage))}
+      ${row('Detail spesifikasi', esc(it.specs).replace(/\n/g,'<br>'))}
+      ${row('Datasheet', it.datasheet ? `<a href="${esc(it.datasheet)}" target="_blank" rel="noopener">${esc(it.datasheet)}</a>` : '')}
+      ${row('Lokasi', esc(locLine(it)))}
+      ${row('Proyek', it.projects.map(p => `<span class="tag">${esc(p)}</span>`).join(''))}
+      ${row('Catatan', esc(it.notes).replace(/\n/g,'<br>'))}
+      ${row('Ditambahkan', fmtDateTime(it.createdAt))}${row('Terakhir diubah', fmtDateTime(it.updatedAt))}
+    </dl>
+    <div class="mini-log"><h4>Riwayat terbaru</h4>${logs.length ? `<div class="table-wrap"><table class="grid"><tbody>${logRowsHtml(logs, false)}</tbody></table></div>` : '<div class="sub">Belum ada riwayat.</div>'}</div>`;
+  $('#detailDlg').showModal();
+}
+async function deleteItem(id) {
+  const it = byId(id); if (!it) return;
+  const ok = await ask({title:'Hapus barang?', msg:`${it.code} — ${it.name} (stok ${it.qty} ${it.unit}) akan dihapus. Riwayatnya tetap tersimpan.`, ok:'Hapus', danger:true});
+  if (!ok) return;
+  state.items = state.items.filter(i => i.id !== id);
+  addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type:'hapus', qty:it.qty, before:it.qty, after:0, note:'Barang dihapus dari inventaris'});
+  save(); render(); toast(`${it.code} dihapus`);
+  if ($('#detailDlg').open) $('#detailDlg').close();
+}
+
+/* =========================================================
+   Kelola kategori / lokasi / proyek
+   ========================================================= */
+async function renameEntry(kind, oldV) {
+  const label = {cat:'kategori', loc:'lokasi', proj:'proyek'}[kind];
+  const v = await ask({title:`Ganti nama ${label}`, input:oldV, ok:'Simpan'});
+  if (!v || v === oldV) return;
+  if (kind === 'cat') {
+    if (allCategories().includes(v)) { toast('Kategori itu sudah ada', 'warn'); return; }
+    state.categories = state.categories.map(c => c === oldV ? v : c);
+    if (!state.categories.includes(v)) state.categories.push(v);
+    state.items.forEach(i => { if (i.category === oldV) i.category = v; });
+    if (ui.cat === oldV) ui.cat = v;
+  } else if (kind === 'loc') {
+    state.locations = uniqSorted(state.locations.map(l => l === oldV ? v : l).concat(v));
+    state.items.forEach(i => { if (i.location === oldV) i.location = v; });
+    if (ui.loc === oldV) ui.loc = v;
+  } else {
+    state.projects = uniqSorted(state.projects.map(p => p === oldV ? v : p).concat(v));
+    state.items.forEach(i => { i.projects = [...new Set(i.projects.map(p => p === oldV ? v : p))]; });
+    state.logs.forEach(l => { if (l.project === oldV) l.project = v; });
+    if (ui.proj === oldV) ui.proj = v;
+  }
+  save(); render(); toast('Nama diperbarui');
+}
+async function removeEntry(kind, v) {
+  if (kind === 'cat') {
+    const n = state.items.filter(i => i.category === v).length;
+    if (n) { toast(`Masih ada ${n} barang di kategori ini. Pindahkan dulu atau ganti nama kategorinya.`, 'warn'); return; }
+    state.categories = state.categories.filter(c => c !== v);
+  } else if (kind === 'loc') {
+    const n = state.items.filter(i => i.location === v).length;
+    if (n && !await ask({title:'Hapus lokasi?', msg:`${n} barang akan dikosongkan lokasinya.`, ok:'Hapus', danger:true})) return;
+    state.locations = state.locations.filter(l => l !== v);
+    state.items.forEach(i => { if (i.location === v) i.location = ''; });
+  } else {
+    const n = state.items.filter(i => i.projects.includes(v)).length;
+    if (!await ask({title:'Hapus proyek?', msg:`Tag proyek dilepas dari ${n} barang. Riwayat pemakaian tetap tersimpan.`, ok:'Hapus', danger:true})) return;
+    state.projects = state.projects.filter(p => p !== v);
+    state.items.forEach(i => { i.projects = i.projects.filter(p => p !== v); });
+  }
+  save(); render();
+}
+function addEntry(kind, inputSel) {
+  const v = $(inputSel).value.trim(); if (!v) return;
+  const list = kind === 'cat' ? state.categories : kind === 'loc' ? state.locations : state.projects;
+  if ((kind === 'cat' ? allCategories() : kind === 'loc' ? allLocations() : allProjects()).includes(v)) { toast('Sudah ada', 'warn'); return; }
+  list.push(v); $(inputSel).value = '';
+  save(); render(); toast(`“${v}” ditambahkan`);
+}
+
+/* =========================================================
+   Ekspor
+   ========================================================= */
+const fileName = (ext) => `Inventaris-Elektronik_${today()}.${ext}`;
+const scopeLabel = () => {
+  if (ui.scope === 'all') return 'Semua barang';
+  const f = [ui.cat && `kategori ${ui.cat}`, ui.loc && `lokasi ${ui.loc}`, ui.status && `status ${STATUS_LABEL[ui.status]}`, ui.proj && `proyek ${ui.proj}`, ui.q && `pencarian “${ui.q}”`].filter(Boolean);
+  return f.length ? 'Filter: ' + f.join(', ') : 'Semua barang';
+};
+function summaryOf(rows) {
+  return { n: rows.length, units: rows.reduce((s,i) => s + i.qty, 0), low: rows.filter(i => statusOf(i) === 'menipis').length, out: rows.filter(i => statusOf(i) === 'habis').length };
+}
+const restockList = (rows) => rows.filter(i => statusOf(i) !== 'aman')
+  .map(i => ({...i, need: Math.max(i.minStock - i.qty + 1, 1)}))
+  .sort((a,b) => (statusOf(a) === 'habis' ? 0 : 1) - (statusOf(b) === 'habis' ? 0 : 1) || a.code.localeCompare(b.code,'id',{numeric:true}));
+function libMissing(name) { toast(`Library ${name} belum termuat. Pastikan terhubung ke internet lalu muat ulang halaman.`, 'danger'); }
+function guardRows(rows) { if (!rows.length) { toast('Tidak ada barang untuk diekspor', 'warn'); return false; } return true; }
+
+function itemToRow(it) {
+  const r = {};
+  FIELDS.forEach(([k, label]) => r[label] = k === 'projects' ? it.projects.join(', ') : it[k]);
+  r['Status'] = STATUS_LABEL[statusOf(it)];
+  r['Terakhir Diubah'] = fmtDateTime(it.updatedAt);
+  return r;
+}
+function sheetFrom(rows, headers, widths) {
+  const ws = XLSX.utils.json_to_sheet(rows, {header: headers});
+  ws['!cols'] = widths.map(w => ({wch: w}));
+  if (ws['!ref']) ws['!autofilter'] = {ref: ws['!ref']};
+  return ws;
+}
+function exportExcel() {
+  if (!window.XLSX) return libMissing('Excel');
+  const rows = exportItems(); if (!guardRows(rows)) return;
+  const wb = XLSX.utils.book_new();
+  const invHeaders = [...FIELDS.map(f => f[1]), 'Status', 'Terakhir Diubah'];
+  XLSX.utils.book_append_sheet(wb, sheetFrom(rows.map(itemToRow), invHeaders, [...FIELDS.map(f => f[2]), 10, 20]), 'Inventaris');
+
+  const rs = restockList(rows).map(i => ({'Kode':i.code, 'Nama':i.name, 'Kategori':i.category, 'Nilai/Spesifikasi':specLine(i), 'Part Number':i.partNumber, 'Lokasi':locLine(i), 'Stok':i.qty, 'Stok Minimum':i.minStock, 'Perlu Dibeli (min.)':i.need, 'Satuan':i.unit, 'Status':STATUS_LABEL[statusOf(i)]}));
+  XLSX.utils.book_append_sheet(wb, sheetFrom(rs, ['Kode','Nama','Kategori','Nilai/Spesifikasi','Part Number','Lokasi','Stok','Stok Minimum','Perlu Dibeli (min.)','Satuan','Status'], [12,30,18,24,16,22,8,12,16,8,10]), 'Perlu Restock');
+
+  const cats = {};
+  rows.forEach(i => { const c = cats[i.category] ||= {'Kategori':i.category, 'Jenis Barang':0, 'Total Unit':0, 'Menipis':0, 'Habis':0}; c['Jenis Barang']++; c['Total Unit'] += i.qty; if (statusOf(i)==='menipis') c['Menipis']++; if (statusOf(i)==='habis') c['Habis']++; });
+  const s = summaryOf(rows);
+  const catRows = Object.values(cats).sort((a,b) => a.Kategori.localeCompare(b.Kategori,'id'));
+  catRows.push({'Kategori':'TOTAL', 'Jenis Barang':s.n, 'Total Unit':s.units, 'Menipis':s.low, 'Habis':s.out});
+  XLSX.utils.book_append_sheet(wb, sheetFrom(catRows, ['Kategori','Jenis Barang','Total Unit','Menipis','Habis'], [24,14,12,10,10]), 'Ringkasan');
+
+  const ids = new Set(rows.map(i => i.id));
+  const logs = (ui.scope === 'all' ? state.logs : state.logs.filter(l => ids.has(l.itemId))).map(l => ({'Waktu':fmtDateTime(l.date), 'Kode':l.itemCode, 'Nama':l.itemName, 'Jenis':TYPE_LABEL[l.type] || l.type, 'Jumlah':logQty(l), 'Stok Sebelum':l.before, 'Stok Sesudah':l.after, 'Proyek':l.project, 'Catatan':l.note}));
+  XLSX.utils.book_append_sheet(wb, sheetFrom(logs, ['Waktu','Kode','Nama','Jenis','Jumlah','Stok Sebelum','Stok Sesudah','Proyek','Catatan'], [20,12,30,12,9,12,12,20,34]), 'Riwayat');
+
+  XLSX.writeFile(wb, fileName('xlsx'));
+  toast(`Excel diekspor (${rows.length} barang)`);
+}
+
+// Font standar PDF hanya mendukung Latin-1, jadi simbol seperti Ω diganti teks.
+const pdfText = (s) => String(s ?? '').replace(/Ω/g, 'ohm').replace(/[–—]/g, '-').replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/→/g, '->').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/[^\x00-\xFF]/g, '?');
+function exportPDF() {
+  const J = window.jspdf;
+  if (!J || !J.jsPDF || !J.jsPDF.API.autoTable) return libMissing('PDF');
+  const rows = exportItems(); if (!guardRows(rows)) return;
+  const s = summaryOf(rows);
+  const doc = new J.jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+  const TEAL = [15,118,110];
+  doc.setFillColor(...TEAL); doc.rect(0, 0, W, 4, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(24,32,42);
+  doc.text('Laporan Inventaris Komponen Elektronik', 14, 16);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(93,105,120);
+  doc.text(pdfText(`Dicetak ${fmtDateTime(nowISO())}  ·  ${scopeLabel()}`), 14, 22);
+  // kotak ringkasan
+  const boxes = [['Jenis barang', s.n], ['Total unit', s.units], ['Stok menipis', s.low], ['Habis', s.out]];
+  boxes.forEach(([k, v], idx) => {
+    const x = 14 + idx * 48;
+    doc.setDrawColor(221,226,232); doc.setFillColor(244,246,248); doc.roundedRect(x, 26, 44, 14, 2, 2, 'FD');
+    doc.setFontSize(8); doc.setTextColor(93,105,120); doc.text(k, x + 4, 31);
+    doc.setFont('helvetica','bold'); doc.setFontSize(12);
+    doc.setTextColor(...(idx === 2 && v ? [168,90,7] : idx === 3 && v ? [180,35,24] : [24,32,42]));
+    doc.text(fmtNum(v), x + 4, 37.5); doc.setFont('helvetica','normal');
+  });
+  const statusColors = {aman:[[230,244,234],[21,128,61]], menipis:[[253,241,223],[168,90,7]], habis:[[253,236,235],[180,35,24]]};
+  const statusCell = (data, col) => {
+    if (data.section !== 'body' || data.column.index !== col) return;
+    const key = Object.keys(STATUS_LABEL).find(k => STATUS_LABEL[k] === data.cell.raw);
+    if (key) { data.cell.styles.fillColor = statusColors[key][0]; data.cell.styles.textColor = statusColors[key][1]; data.cell.styles.fontStyle = 'bold'; }
+  };
+  const common = { theme:'grid', margin:{left:14, right:14, bottom:14},
+    styles:{font:'helvetica', fontSize:7.6, cellPadding:1.6, lineColor:[221,226,232], lineWidth:.1, textColor:[24,32,42], valign:'middle', overflow:'linebreak'},
+    headStyles:{fillColor:TEAL, textColor:255, fontStyle:'bold', fontSize:8}, alternateRowStyles:{fillColor:[248,250,251]} };
+  doc.autoTable(Object.assign({}, common, {
+    startY: 46,
+    head: [['Kode','Nama barang','Kategori','Spesifikasi','Part number','Lokasi','Stok','Min','Status','Proyek']],
+    body: rows.map(i => [i.code, i.name, i.category, specLine(i), i.partNumber, locLine(i), `${fmtNum(i.qty)} ${i.unit}`, i.minStock || '-', STATUS_LABEL[statusOf(i)], i.projects.join(', ')].map(pdfText)),
+    columnStyles:{0:{cellWidth:18, font:'courier', fontSize:7.2}, 1:{cellWidth:46, fontStyle:'bold'}, 2:{cellWidth:26}, 3:{cellWidth:36}, 4:{cellWidth:24}, 5:{cellWidth:32}, 6:{cellWidth:16, halign:'right'}, 7:{cellWidth:10, halign:'right'}, 8:{cellWidth:16, halign:'center'}, 9:{cellWidth:'auto'}},
+    didParseCell: (d) => statusCell(d, 8)
+  }));
+  const rs = restockList(rows);
+  if (rs.length) {
+    let y = doc.lastAutoTable.finalY + 12;
+    if (y > H - 40) { doc.addPage(); y = 18; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(12.5); doc.setTextColor(24,32,42);
+    doc.text(`Daftar belanja / perlu restock (${rs.length})`, 14, y);
+    doc.autoTable(Object.assign({}, common, {
+      startY: y + 4,
+      head: [['', 'Kode','Nama barang','Spesifikasi','Part number','Lokasi','Stok','Min','Beli min.','Status']],
+      body: rs.map(i => ['', i.code, i.name, specLine(i), i.partNumber, locLine(i), i.qty, i.minStock || '-', `${i.need} ${i.unit}`, STATUS_LABEL[statusOf(i)]].map(pdfText)),
+      columnStyles:{0:{cellWidth:7}, 1:{cellWidth:18, font:'courier', fontSize:7.2}, 2:{cellWidth:56, fontStyle:'bold'}, 3:{cellWidth:40}, 4:{cellWidth:28}, 5:{cellWidth:36}, 6:{cellWidth:13, halign:'right'}, 7:{cellWidth:12, halign:'right'}, 8:{cellWidth:20, halign:'right'}, 9:{cellWidth:'auto', halign:'center'}},
+      didParseCell: (d) => statusCell(d, 9),
+      didDrawCell: (d) => { if (d.section === 'body' && d.column.index === 0) { doc.setDrawColor(120); doc.rect(d.cell.x + 2, d.cell.y + d.cell.height/2 - 1.6, 3.2, 3.2); } }
+    }));
+  }
+  const pages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(138,149,163);
+    doc.text('Inventaris Elektronik', 14, H - 7);
+    doc.text(`Halaman ${p} dari ${pages}`, W - 14, H - 7, {align:'right'});
+  }
+  doc.save(fileName('pdf'));
+  toast(`PDF diekspor (${rows.length} barang)`);
+}
+
+function exportDocx() {
+  const D = window.docx;
+  if (!D || !D.Document) return libMissing('Word');
+  const rows = exportItems(); if (!guardRows(rows)) return;
+  const s = summaryOf(rows);
+  const TEAL = '0F766E', BORDER = 'DDE2E8';
+  const STATUS_FILL = {aman:['E6F4EA','15803D'], menipis:['FDF1DF','A85A07'], habis:['FDECEB','B42318']};
+  const run = (text, o = {}) => new D.TextRun(Object.assign({text: String(text ?? ''), font:'Calibri', size:18}, o));
+  const cell = (text, o = {}) => new D.TableCell({
+    width: o.w ? {size:o.w, type:D.WidthType.DXA} : undefined,
+    shading: o.fill ? {fill:o.fill, type:D.ShadingType.CLEAR, color:'auto'} : undefined,
+    margins: {top:50, bottom:50, left:90, right:90}, verticalAlign: D.VerticalAlign.CENTER,
+    children: String(text ?? '').split('\n').map(line => new D.Paragraph({alignment:o.align, children:[run(line, {bold:o.bold, color:o.color, size:o.size || 17, font:o.mono ? 'Consolas' : 'Calibri'})]}))
+  });
+  const borders = {top:{style:D.BorderStyle.SINGLE, size:4, color:BORDER}, bottom:{style:D.BorderStyle.SINGLE, size:4, color:BORDER}, left:{style:D.BorderStyle.SINGLE, size:4, color:BORDER}, right:{style:D.BorderStyle.SINGLE, size:4, color:BORDER}, insideHorizontal:{style:D.BorderStyle.SINGLE, size:4, color:BORDER}, insideVertical:{style:D.BorderStyle.SINGLE, size:4, color:BORDER}};
+  const table = (headers, widths, body, statusCol) => new D.Table({
+    width:{size: widths.reduce((a,b) => a+b, 0), type:D.WidthType.DXA}, columnWidths: widths, borders,
+    rows: [
+      new D.TableRow({tableHeader:true, children: headers.map((h, i) => cell(h, {w:widths[i], fill:TEAL, color:'FFFFFF', bold:true}))}),
+      ...body.map((r, ri) => new D.TableRow({cantSplit:true, children: r.map((v, ci) => {
+        if (ci === statusCol) { const k = Object.keys(STATUS_LABEL).find(k => STATUS_LABEL[k] === v); return cell(v, {w:widths[ci], fill:STATUS_FILL[k][0], color:STATUS_FILL[k][1], bold:true, align:D.AlignmentType.CENTER}); }
+        return cell(v, {w:widths[ci], mono: ci === 0, bold: ci === 1, fill: ri % 2 ? 'F8FAFB' : undefined});
+      })}))
+    ]
+  });
+  const statTable = new D.Table({
+    width:{size:9600, type:D.WidthType.DXA}, columnWidths:[2400,2400,2400,2400], borders,
+    rows:[new D.TableRow({children:[['Jenis barang', s.n,'18202A'],['Total unit', s.units,'18202A'],['Stok menipis', s.low,'A85A07'],['Habis', s.out,'B42318']].map(([k, v, c]) => new D.TableCell({
+      width:{size:2400, type:D.WidthType.DXA}, shading:{fill:'F4F6F8', type:D.ShadingType.CLEAR, color:'auto'}, margins:{top:80, bottom:80, left:140, right:140},
+      children:[new D.Paragraph({children:[run(k, {size:16, color:'5D6978'})]}), new D.Paragraph({children:[run(fmtNum(v), {size:30, bold:true, color: v ? c : '18202A'})]})]
+    }))})]
+  });
+  const children = [
+    new D.Paragraph({heading:D.HeadingLevel.TITLE, spacing:{after:60}, children:[run('Laporan Inventaris Komponen Elektronik', {size:40, bold:true, color:'18202A'})]}),
+    new D.Paragraph({spacing:{after:200}, children:[run(`Dicetak ${fmtDateTime(nowISO())}  ·  ${scopeLabel()}`, {color:'5D6978', size:19})]}),
+    statTable,
+    new D.Paragraph({heading:D.HeadingLevel.HEADING_1, spacing:{before:300, after:120}, children:[run('Daftar barang', {size:28, bold:true, color:TEAL})]}),
+    table(['Kode','Nama barang','Kategori','Spesifikasi','Part number','Lokasi','Stok','Min','Status','Proyek'],
+      [1150, 2600, 1500, 2100, 1400, 1900, 950, 650, 1000, 2100],
+      rows.map(i => [i.code, i.name, i.category, specLine(i), i.partNumber, locLine(i), `${fmtNum(i.qty)} ${i.unit}`, i.minStock ? String(i.minStock) : '-', STATUS_LABEL[statusOf(i)], i.projects.join(', ')]), 8)
+  ];
+  const rs = restockList(rows);
+  if (rs.length) {
+    children.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_1, spacing:{before:360, after:120}, children:[run(`Daftar belanja / perlu restock (${rs.length})`, {size:28, bold:true, color:TEAL})]}));
+    children.push(table(['Kode','Nama barang','Spesifikasi','Part number','Lokasi','Stok','Min','Beli min.','Status'],
+      [1150, 3000, 2400, 1700, 2200, 900, 800, 1200, 1100],
+      rs.map(i => [i.code, i.name, specLine(i), i.partNumber, locLine(i), String(i.qty), i.minStock ? String(i.minStock) : '-', `${i.need} ${i.unit}`, STATUS_LABEL[statusOf(i)]]), 8));
+  }
+  const doc = new D.Document({
+    creator:'Inventaris Elektronik', title:'Laporan Inventaris Komponen Elektronik',
+    sections:[{
+      properties:{page:{size:{orientation:D.PageOrientation.LANDSCAPE}, margin:{top:720, bottom:720, left:720, right:720}}},
+      footers:{default: new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT, children:[run('Inventaris Elektronik  ·  Halaman ', {size:16, color:'8A95A3'}), new D.TextRun({children:[D.PageNumber.CURRENT], size:16, color:'8A95A3', font:'Calibri'})]})]})},
+      children
+    }]
+  });
+  D.Packer.toBlob(doc).then(blob => { downloadBlob(blob, fileName('docx')); toast(`Word diekspor (${rows.length} barang)`); })
+    .catch(e => toast('Gagal membuat dokumen Word: ' + e.message, 'danger'));
+}
+
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+/* =========================================================
+   Backup / restore / impor
+   ========================================================= */
+function backupJson() {
+  state.meta.lastBackup = nowISO(); save();
+  const payload = Object.assign({app:'inventaris-elektronik', version:1, exportedAt:nowISO()}, state);
+  downloadBlob(new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'}), `Backup-Inventaris_${today()}.json`);
+  render(); toast('Backup JSON diunduh');
+}
+async function restoreJson(file) {
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || !Array.isArray(data.items)) throw new Error('Format file tidak dikenali');
+    const ok = await ask({title:'Pulihkan backup?', msg:`File berisi ${data.items.length} barang dan ${(data.logs||[]).length} riwayat. Data saat ini (${state.items.length} barang) akan DIGANTI.`, ok:'Ganti data', danger:true});
+    if (!ok) return;
+    state = normalize(data); save(); render(); toast('Backup berhasil dipulihkan');
+  } catch (e) { toast('Gagal membaca backup: ' + e.message, 'danger'); }
+}
+const IMPORT_ALIASES = Object.fromEntries(FIELDS.map(([k, label]) => [label.toLowerCase(), k]));
+Object.assign(IMPORT_ALIASES, {'name':'name','nama barang':'name','code':'code','sku':'code','category':'category','value':'value','qty':'qty','quantity':'qty','stok':'qty','jumlah stok':'qty','min':'minStock','min stock':'minStock','location':'location','lokasi penyimpanan':'location','slot':'slot','project':'projects','projects':'projects','datasheet url':'datasheet','note':'notes','notes':'notes','part no':'partNumber','tegangan':'voltage','rating':'voltage'});
+async function importExcel(file) {
+  if (!window.XLSX) return libMissing('Excel');
+  try {
+    const wb = XLSX.read(await file.arrayBuffer());
+    const sheetName = wb.SheetNames.find(n => n.toLowerCase() === 'inventaris') || wb.SheetNames[0];
+    const raw = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
+    let added = 0, updated = 0, skipped = 0;
+    const taken = state.items.map(i => i.code);
+    raw.forEach(r => {
+      const o = {};
+      Object.entries(r).forEach(([h, v]) => { const k = IMPORT_ALIASES[String(h).trim().toLowerCase()]; if (k) o[k] = typeof v === 'string' ? v.trim() : v; });
+      if (!o.name) { skipped++; return; }
+      if (o.category && !allCategories().includes(o.category)) state.categories.push(o.category);
+      const code = String(o.code || '').trim().toUpperCase();
+      const ex = code && state.items.find(i => i.code.toUpperCase() === code);
+      if (ex) {
+        const before = ex.qty, n = normItem(Object.assign({}, ex, o, {id:ex.id, code:ex.code, createdAt:ex.createdAt}));
+        Object.assign(ex, n, {updatedAt:nowISO()});
+        if (before !== ex.qty) addLog({itemId:ex.id, itemCode:ex.code, itemName:ex.name, type:'koreksi', qty:Math.abs(ex.qty-before), before, after:ex.qty, note:'Impor Excel'});
+        updated++;
+      } else {
+        const it = normItem(Object.assign({}, o, {code: code || nextCode(o.category || 'Lainnya', taken)}));
+        taken.push(it.code); state.items.push(it);
+        addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type:'baru', qty:it.qty, before:0, after:it.qty, note:'Impor Excel'});
+        added++;
+      }
+    });
+    save(); render();
+    toast(`Impor selesai: ${added} baru, ${updated} diperbarui${skipped ? `, ${skipped} baris dilewati (tanpa nama)` : ''}`);
+  } catch (e) { toast('Gagal impor Excel: ' + e.message, 'danger'); }
+}
+function downloadTemplate() {
+  if (!window.XLSX) return libMissing('Excel');
+  const wb = XLSX.utils.book_new();
+  const ex = {'Kode':'', 'Nama':'Arduino Nano V3', 'Kategori':'Mikrokontroler', 'Nilai':'16MHz', 'Part Number':'ATmega328P', 'Package':'Board', 'Tegangan/Rating':'5V', 'Spesifikasi':'USB CH340, 14 digital I/O', 'Jumlah':3, 'Satuan':'pcs', 'Stok Minimum':1, 'Lokasi':'Rak A / Laci 1', 'Kotak/Slot':'Slot 2', 'Proyek':'Smart Garden', 'Datasheet':'', 'Catatan':'Kosongkan Kode agar dibuat otomatis'};
+  XLSX.utils.book_append_sheet(wb, sheetFrom([ex], FIELDS.map(f => f[1]), FIELDS.map(f => f[2])), 'Inventaris');
+  const cat = allCategories().map(c => ({'Kategori yang tersedia':c, 'Prefix kode':prefixOf(c)}));
+  XLSX.utils.book_append_sheet(wb, sheetFrom(cat, ['Kategori yang tersedia','Prefix kode'], [26,12]), 'Daftar Kategori');
+  XLSX.writeFile(wb, 'Template-Inventaris-Elektronik.xlsx');
+}
+
+const SAMPLE = [
+  {name:'Arduino Uno R3', category:'Development Board', value:'16MHz', partNumber:'ATmega328P', package:'Board', voltage:'5V', specs:'14 digital I/O (6 PWM), 6 analog in, USB-B', qty:3, minStock:1, location:'Rak A / Laci 1', slot:'Slot 1', projects:['Robot Line Follower']},
+  {name:'ESP32 DevKit V1', category:'Development Board', value:'240MHz dual-core', partNumber:'ESP32-WROOM-32', package:'Board', voltage:'3.3V', specs:'WiFi + Bluetooth, 30 pin, CP2102', qty:4, minStock:2, location:'Rak A / Laci 1', slot:'Slot 2', projects:['Smart Garden'], datasheet:'https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf'},
+  {name:'NodeMCU ESP8266 V3', category:'Development Board', value:'80MHz', partNumber:'ESP-12E', package:'Board', voltage:'3.3V', specs:'WiFi, CH340', qty:1, minStock:2, location:'Rak A / Laci 1', slot:'Slot 3'},
+  {name:'Raspberry Pi Pico', category:'Mikrokontroler', value:'133MHz', partNumber:'RP2040', package:'Board', voltage:'3.3V', specs:'Dual Cortex-M0+, 264KB SRAM, 2MB flash', qty:2, minStock:1, location:'Rak A / Laci 1', slot:'Slot 4'},
+  {name:'ATmega328P-PU', category:'Mikrokontroler', value:'20MHz', partNumber:'ATmega328P-PU', package:'DIP-28', voltage:'1.8–5.5V', specs:'32KB flash, bisa pakai bootloader Arduino', qty:0, minStock:2, location:'Rak A / Laci 2', slot:'Kotak IC'},
+  {name:'Resistor 10kΩ 1/4W', category:'Resistor', value:'10kΩ', package:'Through-hole', voltage:'1/4W', specs:'Toleransi ±5%, carbon film', qty:150, minStock:30, location:'Rak B / Box Resistor', slot:'Slot 10k'},
+  {name:'Resistor 220Ω 1/4W', category:'Resistor', value:'220Ω', package:'Through-hole', voltage:'1/4W', specs:'Toleransi ±5%', qty:18, minStock:30, location:'Rak B / Box Resistor', slot:'Slot 220'},
+  {name:'Kapasitor Elco 100µF 25V', category:'Kapasitor', value:'100µF', package:'Through-hole', voltage:'25V', specs:'Elektrolit, 105°C', qty:25, minStock:10, location:'Rak B / Box Kapasitor', slot:'Slot 3'},
+  {name:'Kapasitor Keramik 100nF', category:'Kapasitor', value:'100nF (104)', package:'Through-hole', voltage:'50V', specs:'Decoupling', qty:80, minStock:20, location:'Rak B / Box Kapasitor', slot:'Slot 1'},
+  {name:'Sensor DHT22', category:'Sensor', value:'-40~80°C', partNumber:'AM2302', package:'Modul', voltage:'3.3–5V', specs:'Suhu & kelembapan, 1-wire', qty:2, minStock:1, location:'Rak A / Laci 3', projects:['Smart Garden']},
+  {name:'Sensor Ultrasonik HC-SR04', category:'Sensor', value:'2–400cm', package:'Modul', voltage:'5V', specs:'Trigger/Echo', qty:3, minStock:1, location:'Rak A / Laci 3', projects:['Robot Line Follower']},
+  {name:'Soil Moisture Sensor Capacitive v1.2', category:'Sensor', package:'Modul', voltage:'3.3–5V', specs:'Output analog', qty:1, minStock:2, location:'Rak A / Laci 3', projects:['Smart Garden']},
+  {name:'LCD 16x2 + I2C Backpack', category:'Display', partNumber:'HD44780 + PCF8574', package:'Modul', voltage:'5V', specs:'Alamat I2C 0x27', qty:2, minStock:1, location:'Rak A / Laci 4'},
+  {name:'Modul Relay 2 Channel', category:'Relay', package:'Modul', voltage:'5V coil, 10A 250VAC', specs:'Optocoupler, active LOW', qty:2, minStock:1, location:'Rak A / Laci 4', projects:['Smart Garden']},
+  {name:'Driver Motor L298N', category:'Modul', partNumber:'L298N', package:'Modul', voltage:'5–35V, 2A', specs:'Dual H-bridge', qty:1, minStock:1, location:'Rak A / Laci 4', projects:['Robot Line Follower']},
+  {name:'Transistor 2N2222', category:'Transistor', partNumber:'2N2222A', package:'TO-92', voltage:'40V 600mA', specs:'NPN', qty:30, minStock:10, location:'Rak B / Box Semikonduktor', slot:'Slot 1'},
+  {name:'Regulator LM7805', category:'Regulator & Power', value:'5V', partNumber:'LM7805', package:'TO-220', voltage:'In 7–35V, 1.5A', qty:6, minStock:3, location:'Rak B / Box Semikonduktor', slot:'Slot 4'},
+  {name:'LED 5mm Merah', category:'LED', value:'Merah', package:'Through-hole', voltage:'2V 20mA', qty:45, minStock:20, location:'Rak B / Box LED'},
+  {name:'Kabel Jumper Male-Male 20cm', category:'Kabel & Jumper', package:'40 pcs/set', specs:'Dupont', qty:2, unit:'set', minStock:1, location:'Rak C / Kotak Kabel'}
+];
+function loadSample() {
+  const taken = state.items.map(i => i.code);
+  SAMPLE.forEach(s => {
+    const it = normItem(Object.assign({}, s, {code: nextCode(s.category, taken)}));
+    taken.push(it.code); state.items.push(it);
+    addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type:'baru', qty:it.qty, before:0, after:it.qty, note:'Data contoh'});
+    if (!state.locations.includes(it.location)) state.locations.push(it.location);
+  });
+  ['Smart Garden','Robot Line Follower'].forEach(p => { if (!state.projects.includes(p)) state.projects.push(p); });
+  const esp = state.items.find(i => i.name === 'ESP32 DevKit V1'), dht = state.items.find(i => i.name === 'Sensor DHT22');
+  [[esp, 1], [dht, 1]].forEach(([it, q]) => { if (!it) return; const b = it.qty; it.qty -= q; addLog({itemId:it.id, itemCode:it.code, itemName:it.name, type:'keluar', qty:q, before:b, after:it.qty, project:'Smart Garden', note:'Dirakit di prototipe'}); });
+  save(); render(); toast(`${SAMPLE.length} barang contoh ditambahkan`);
+}
+
+/* =========================================================
+   Event
+   ========================================================= */
+function setTab(t) {
+  ui.tab = t;
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + t));
+}
+function clearFilters() { Object.assign(ui, {q:'', cat:'', loc:'', status:'', proj:''}); $('#q').value = ''; render(); }
+
+function applyTheme() {
+  let t = null; try { t = localStorage.getItem(THEME_KEY); } catch {}
+  if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  $('#themeBtn').innerHTML = icon(dark ? 'sun' : 'moon');
+}
+
+function init() {
+  $('#logo').innerHTML = icon('chip');
+  $$('[data-i]').forEach(e => { if (ICONS[e.dataset.i]) e.outerHTML = icon(e.dataset.i); });
+  applyTheme();
+
+  $('#themeBtn').onclick = () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    try { localStorage.setItem(THEME_KEY, dark ? 'light' : 'dark'); } catch {}
+    applyTheme();
+  };
+  $$('.tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+  $('#addBtn').onclick = () => openItemForm();
+  $('#addProjBtn').onclick = async () => { const v = await ask({title:'Proyek baru', input:'', ok:'Tambah'}); if (v) { if (!allProjects().includes(v)) state.projects.push(v); save(); render(); } };
+
+  // dropdown
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-dd]');
+    $$('.dd.open').forEach(d => { if (!t || d.id !== t.dataset.dd) d.classList.remove('open'); });
+    if (t) $('#' + t.dataset.dd).classList.toggle('open');
+  });
+  $$('input[name=scope]').forEach(r => r.onchange = () => ui.scope = r.value);
+  $$('[data-export]').forEach(b => b.onclick = () => {
+    $('#exportDD').classList.remove('open');
+    try { ({xlsx:exportExcel, pdf:exportPDF, docx:exportDocx})[b.dataset.export](); }
+    catch (e) { console.error(e); toast('Ekspor gagal: ' + e.message, 'danger'); }
+  });
+
+  // filter
+  let qT; $('#q').oninput = (e) => { clearTimeout(qT); qT = setTimeout(() => { ui.q = e.target.value; renderItems(); renderStats(); }, 120); };
+  $('#fLoc').onchange = (e) => { ui.loc = e.target.value; render(); };
+  $('#fStatus').onchange = (e) => { ui.status = e.target.value; render(); };
+  $('#fProj').onchange = (e) => { ui.proj = e.target.value; render(); };
+  $('#catChips').onclick = (e) => { const c = e.target.closest('[data-cat]'); if (c) { ui.cat = c.dataset.cat; render(); } };
+  $('#stats').onclick = (e) => {
+    const s = e.target.closest('[data-stat]'); if (!s) return;
+    const a = s.dataset.stat;
+    if (a === 'projects') return setTab('projects');
+    if (a === 'all') return clearFilters();
+    ui.status = ui.status === a ? '' : a; render();
+  };
+
+  // tabel barang (delegasi)
+  $('#view-items').addEventListener('click', (e) => {
+    const sortTh = e.target.closest('th[data-sort]');
+    if (sortTh) { const k = sortTh.dataset.sort; ui.sort = {key:k, dir: ui.sort.key === k ? -ui.sort.dir : 1}; renderItems(); return; }
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const id = b.closest('tr')?.dataset.id;
+    ({ new:() => openItemForm(), sample:loadSample, importxls:() => $('#fileXls').click(), clearf:clearFilters, backup:backupJson,
+       detail:() => openDetail(id), edit:() => openItemForm(id), delete:() => deleteItem(id), move:() => openMove(id),
+       inc:() => quickAdjust(id, 1), dec:() => quickAdjust(id, -1) })[b.dataset.act]?.();
+  });
+
+  // form barang
+  $('#itemForm').addEventListener('submit', (e) => { e.preventDefault(); if (saveItemForm()) $('#itemDlg').close(); });
+  $('#f_category').onchange = updateCodePlaceholder;
+  $('#f_projInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addFormTag(e.target.value); }
+    else if (e.key === 'Backspace' && !e.target.value && formProjects.length) { formProjects.pop(); renderFormTags(); }
+  });
+  $('#f_projInput').addEventListener('change', (e) => { if (allProjects().includes(e.target.value.trim())) addFormTag(e.target.value); });
+  $('#f_tags').addEventListener('click', (e) => { const x = e.target.closest('button[data-i]'); if (x) { formProjects.splice(+x.dataset.i, 1); renderFormTags(); } else $('#f_projInput').focus(); });
+  $$('.sym button').forEach(b => b.onclick = () => {
+    const inp = $('#' + b.parentElement.dataset.target), s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? s;
+    inp.value = inp.value.slice(0, s) + b.textContent + inp.value.slice(en); inp.focus(); inp.setSelectionRange(s + 1, s + 1);
+  });
+
+  // stok
+  $('#moveForm').addEventListener('submit', (e) => { e.preventDefault(); if (saveMove()) $('#moveDlg').close(); });
+  $('#mvQty').oninput = updateMovePreview;
+  $$('input[name=mvType]').forEach(r => r.onchange = updateMovePreview);
+
+  // detail
+  $('#dEdit').onclick = () => { $('#detailDlg').close(); openItemForm(detailId); };
+  $('#dMove').onclick = () => { $('#detailDlg').close(); openMove(detailId); };
+  $('#dDelete').onclick = () => deleteItem(detailId);
+  $('#dDup').onclick = () => { const it = byId(detailId); $('#detailDlg').close(); openItemForm(null, Object.assign({}, it, {id:null, code:'', qty:0, createdAt:null, updatedAt:null})); };
+
+  // tutup dialog
+  $$('[data-close]').forEach(b => b.onclick = () => b.closest('dialog').close());
+  $$('dialog').forEach(d => d.addEventListener('click', (e) => { if (e.target === d && d.id !== 'askDlg') d.close(); }));
+
+  // proyek & pengaturan
+  $('#projBody').onclick = (e) => { const b = e.target.closest('[data-filter-proj]'); if (b) { Object.assign(ui, {q:'', cat:'', loc:'', status:'', proj:b.dataset.filterProj}); $('#q').value = ''; setTab('items'); render(); } };
+  $('#view-settings').addEventListener('click', (e) => {
+    const r = e.target.closest('[data-rename]'); if (r) return renameEntry(r.dataset.rename, r.dataset.v);
+    const d = e.target.closest('[data-remove]'); if (d) return removeEntry(d.dataset.remove, d.dataset.v);
+  });
+  $('#addCatBtn').onclick = () => addEntry('cat', '#newCat');
+  $('#addLocBtn').onclick = () => addEntry('loc', '#newLoc');
+  $('#addProjBtn2').onclick = () => addEntry('proj', '#newProj');
+  [['#newCat','#addCatBtn'],['#newLoc','#addLocBtn'],['#newProj','#addProjBtn2']].forEach(([i, b]) => $(i).onkeydown = (e) => { if (e.key === 'Enter') $(b).click(); });
+  $('#backupBtn').onclick = backupJson;
+  $('#restoreBtn').onclick = () => $('#fileJson').click();
+  $('#importXlsBtn').onclick = () => $('#fileXls').click();
+  $('#templateBtn').onclick = downloadTemplate;
+  $('#sampleBtn').onclick = loadSample;
+  $('#resetBtn').onclick = async () => {
+    if (!await ask({title:'Hapus SEMUA data?', msg:`${state.items.length} barang dan ${state.logs.length} riwayat akan dihapus permanen ${mode === 'server' ? 'dari server (untuk SEMUA pengguna)' : 'dari browser ini'}. Ketik HAPUS untuk konfirmasi.`, input:'', ok:'Hapus semua', danger:true}).then(v => v === 'HAPUS')) { toast('Dibatalkan'); return; }
+    state = normalize(null); save(); clearFilters(); toast('Semua data dihapus');
+  };
+  $('#fileJson').onchange = (e) => { const f = e.target.files[0]; if (f) restoreJson(f); e.target.value = ''; };
+  $('#fileXls').onchange = (e) => { const f = e.target.files[0]; if (f) importExcel(f); e.target.value = ''; };
+
+  // riwayat
+  $('#lq').oninput = (e) => { ui.lq = e.target.value; renderLogs(); };
+  $('#lType').onchange = (e) => { ui.lType = e.target.value; renderLogs(); };
+
+  // pintasan keyboard
+  document.addEventListener('keydown', (e) => {
+    if (document.querySelector('dialog[open]') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if (e.key === '/') { e.preventDefault(); setTab('items'); $('#q').focus(); }
+    else if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openItemForm(); }
+  });
+
+}
+init();
+boot();
+</script>
+</body>
+</html>
