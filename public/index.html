@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Inventaris Elektronik</title>
+<title>Inventaris Elektronik · Electrical Embedded System</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' rx='2' fill='%238b1e2d'/%3E%3Cpath d='M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4' stroke='%23121213' stroke-width='2'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,6 +104,7 @@ header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;just
 .title{min-width:0;display:flex;align-items:center;gap:12px}
 .title-ic{width:22px;height:22px;display:grid;place-items:center;color:var(--text)}
 .title-ic svg{width:20px;height:20px}
+.title .eyebrow{display:block;margin-bottom:2px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--focus)}
 .title h1{margin:0;font-size:19px;font-weight:600;line-height:1.25}
 .title p{margin:1px 0 0;color:var(--muted);font-size:12.5px}
 .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -455,7 +456,7 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
 
 <div class="content">
 <header class="top">
-  <div class="title"><span class="title-ic" id="pageIcon" aria-hidden="true"></span><div><h1 id="pageTitle">Barang</h1><p id="pageSub"></p></div></div>
+  <div class="title"><span class="title-ic" id="pageIcon" aria-hidden="true"></span><div><span class="eyebrow">Electrical Embedded System</span><h1 id="pageTitle">Barang</h1><p id="pageSub"></p></div></div>
   <div class="top-actions">
     <span class="sync" id="syncPill" hidden><span class="dot"></span><span class="t"></span></span>
     <div class="dd" id="exportDD">
