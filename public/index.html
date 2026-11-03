@@ -25,7 +25,7 @@
   --ok:#15803d; --ok-soft:#dcfce7; --warn:#b45309; --warn-soft:#fef3c7; --danger:#b91c1c; --danger-soft:#fee2e2;
   --info:#3f3f46; --info-soft:#e4e4e7;
   --focus:#7a1626;
-  --shadow-lg:0 18px 44px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.06);
   --r-lg:12px; --r:8px; --r-sm:6px;
   --sans:"Roboto","Segoe UI",system-ui,-apple-system,sans-serif;
   --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -34,7 +34,7 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --frame:#2b2b2e; --side:#121213; --bg:#0a0a0a; --surface:#1c1c1e; --surface-2:#262628; --surface-3:#333336; --thead:#5c1a22;
+    --frame:#2b2b2e; --side:#121213; --bg:#0a0a0a; --surface:#1c1c1e; --surface-2:#262628; --surface-3:#333336; --thead:#34141a;
     --border:#2a2a2d; --border-strong:#46464a;
     --text:#f2f2f2; --muted:#b3b3b8; --faint:#9a9aa0;
     --nav-active:#3b1219; --nav-text:#e0e0e0;
@@ -43,12 +43,12 @@
     --ok:#4ade80; --ok-soft:rgba(74,222,128,.13); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.13); --danger:#f87171; --danger-soft:rgba(248,113,113,.14);
     --info:#d4d4d8; --info-soft:rgba(212,212,216,.12);
     --focus:#e8707f;
-    --shadow-lg:0 18px 44px rgba(0,0,0,.7);
+    --shadow-lg:0 8px 24px rgba(0,0,0,.7);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --frame:#2b2b2e; --side:#121213; --bg:#0a0a0a; --surface:#1c1c1e; --surface-2:#262628; --surface-3:#333336; --thead:#5c1a22;
+  --frame:#2b2b2e; --side:#121213; --bg:#0a0a0a; --surface:#1c1c1e; --surface-2:#262628; --surface-3:#333336; --thead:#34141a;
   --border:#2a2a2d; --border-strong:#46464a;
   --text:#f2f2f2; --muted:#b3b3b8; --faint:#9a9aa0;
   --nav-active:#3b1219; --nav-text:#e0e0e0;
@@ -57,7 +57,7 @@
   --ok:#4ade80; --ok-soft:rgba(74,222,128,.13); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.13); --danger:#f87171; --danger-soft:rgba(248,113,113,.14);
   --info:#d4d4d8; --info-soft:rgba(212,212,216,.12);
   --focus:#e8707f;
-  --shadow-lg:0 18px 44px rgba(0,0,0,.7);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.7);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -70,6 +70,9 @@ svg{width:18px;height:18px;flex:none}
 .mono{font-variant-numeric:tabular-nums}
 .sub{font-size:12.5px;color:var(--muted)}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+:root{accent-color:var(--violet);scrollbar-color:var(--surface-3) transparent}
+::selection{background:color-mix(in srgb,var(--violet) 40%,transparent)}
+input,textarea{caret-color:var(--focus)}
 
 /* ---------- bingkai: sidebar + header + konten ---------- */
 .app{display:grid;grid-template-columns:236px minmax(0,1fr);margin:24px;min-height:calc(100vh - 48px);background:var(--bg);border-radius:18px;overflow:clip;align-items:start}
@@ -83,7 +86,6 @@ svg{width:18px;height:18px;flex:none}
 .tab{position:relative;display:flex;align-items:center;gap:14px;min-height:46px;padding:0 24px;border:0;background:none;color:var(--nav-text);font-size:14px;font-weight:400;text-align:left;transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
 .tab:hover{background:color-mix(in srgb,var(--nav-active) 55%,transparent);color:var(--text)}
 .tab[aria-selected="true"]{background:var(--nav-active);color:var(--text);font-weight:500}
-.tab[aria-selected="true"]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--violet)}
 .tab .count{margin-left:auto;font-size:11.5px;font-weight:500;padding:0 7px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
 .tab[aria-selected="true"] .count{background:var(--violet);color:var(--on-violet)}
 .restock-card{margin:auto 16px 0;background:var(--surface-2);border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
@@ -104,15 +106,15 @@ header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;just
 .title{min-width:0;display:flex;align-items:center;gap:12px}
 .title-ic{width:22px;height:22px;display:grid;place-items:center;color:var(--text)}
 .title-ic svg{width:20px;height:20px}
-.title .eyebrow{display:block;margin-bottom:2px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--focus)}
+.title .eyebrow{display:block;font-size:12.5px;font-weight:600;color:var(--focus)}
 .title h1{margin:0;font-size:19px;font-weight:600;line-height:1.25}
 .title p{margin:1px 0 0;color:var(--muted);font-size:12.5px}
 .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.sync{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);height:38px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--r-sm);white-space:nowrap}
+.sync{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);height:38px;padding:0 8px;white-space:nowrap}
 .sync .dot{--c:var(--faint)}
 .sync.ok .dot{--c:var(--ok)}
 .sync.saving .dot{--c:var(--warn)}
-.sync.error{color:var(--danger);border-color:var(--danger)}
+.sync.error{color:var(--danger)}
 .sync.error .dot{--c:var(--danger)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:var(--c,currentColor)}
 main{min-width:0;padding:26px 28px 44px}
@@ -145,7 +147,7 @@ section.view.active{display:block;animation:fade 200ms var(--ease)}
 .dd-menu button small{display:block;color:var(--muted);font-size:12px;font-weight:400}
 .dd-menu .sep{height:1px;background:var(--border);margin:6px 4px}
 .dd-menu .label{font-size:12px;font-weight:500;color:var(--muted);padding:6px 10px}
-.ft{width:36px;height:36px;border-radius:var(--r);display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex:none}
+.ft{width:36px;height:36px;border-radius:var(--r);display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;flex:none}
 .btn .ft{width:30px;height:22px;border-radius:5px;margin-left:-6px}
 .ft.xl{background:#1d6f42}.ft.pdf{background:#b42318}.ft.doc{background:#2b579a}.ft.json{background:#55555b}
 .seg{display:flex;background:var(--surface-2);border-radius:var(--r-sm);padding:3px;gap:2px;margin:0 4px 4px}
@@ -155,34 +157,32 @@ section.view.active{display:block;animation:fade 200ms var(--ease)}
 .seg label:has(input:focus-visible){outline:2px solid var(--focus)}
 
 /* ---------- kartu ringkasan: angka kiri, ikon lingkaran ungu kanan ---------- */
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
-.tile{position:relative;overflow:hidden;appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--r-lg);padding:16px 18px;min-height:132px;display:flex;flex-direction:column;align-items:stretch;gap:2px;text-align:left;font:inherit;transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease)}
-.tile:hover{border-color:var(--border-strong);background:color-mix(in srgb,var(--surface-2) 50%,var(--surface))}
-.tile:active{transform:scale(.99)}
-.tile-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.tile .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--violet) 18%,transparent);color:var(--violet)}
-.tile .ic svg{width:18px;height:18px}
-.tile .k{font-size:13px;font-weight:500;color:var(--muted)}
-/* panah kecil: penanda kartu bisa diklik untuk filter */
-.tile-top::after{content:"\2197";margin-left:auto;font-size:14px;color:var(--faint);opacity:0;transform:translate(-3px,3px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
-.tile:hover .tile-top::after,.tile:focus-visible .tile-top::after{opacity:1;transform:none}
-.tile .v{font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
-.tile .f{font-size:12.5px;color:var(--faint)}
-.tile .share{display:block;height:4px;border-radius:999px;background:var(--surface-3);margin-top:10px;overflow:hidden}
-.tile .share i{display:block;height:100%;border-radius:inherit;background:currentColor}
-/* kartu utama: gradasi maroon */
-.tile.hero{background:linear-gradient(135deg,var(--primary) 0%,color-mix(in srgb,var(--primary) 45%,var(--surface)) 100%);border-color:transparent;color:#fff}
-.tile.hero:hover{filter:brightness(1.08)}
-.tile.hero .ic{background:rgba(255,255,255,.16);color:#fff}
-.tile.hero .k,.tile.hero .f,.tile.hero .tile-top::after{color:rgba(255,255,255,.78)}
-.tile.warn .ic{background:var(--warn-soft);color:var(--warn)}
-.tile.danger .ic{background:var(--danger-soft);color:var(--danger)}
-.tile.warn .share{color:var(--warn)}
-.tile.danger .share{color:var(--danger)}
-.tile.warn:not(.zero) .v{color:var(--warn)}
-.tile.danger:not(.zero) .v{color:var(--danger)}
-.tile.zero .share{opacity:.5}
-.tile.active{border-color:var(--violet);box-shadow:inset 0 0 0 1px var(--violet)}
+.tiles{display:grid;grid-template-columns:minmax(240px,1.6fr) repeat(4,minmax(0,1fr));gap:1px;margin-bottom:16px;background:var(--border);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.tiles:empty{min-height:112px;background:var(--surface)}
+.tile{appearance:none;border:0;background:var(--surface);color:var(--text);padding:12px 16px;display:flex;flex-direction:column;align-items:stretch;gap:4px;text-align:left;font:inherit;transition:background 80ms linear}
+.tile:hover{background:var(--surface-2)}
+.tile:focus-visible{outline-offset:-2px}
+.tile .k{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.tile .k i{width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}
+.tile .v{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.tile .v small{margin-left:8px;font-size:12.5px;font-weight:400;letter-spacing:0;color:var(--muted)}
+.tile .f{font-size:12px;color:var(--faint)}
+.tile.warn .k i,.tile.warn:not(.zero) .v{color:var(--warn)}
+.tile.danger .k i,.tile.danger:not(.zero) .v{color:var(--danger)}
+.tile.zero .k i{color:var(--faint)}
+/* metrik utama: keputusan yang diambil operator adalah "apa yang harus dibeli" */
+.tile.hero{background:color-mix(in srgb,var(--violet) 9%,var(--surface))}
+.tile.hero:hover{background:color-mix(in srgb,var(--violet) 15%,var(--surface))}
+.tile.hero.zero{background:var(--surface)}
+.tile.hero.zero:hover{background:var(--surface-2)}
+.tile.hero .v{font-size:32px;font-weight:700}
+.stock-bar{display:flex;gap:2px;height:6px;margin:4px 0 2px;border-radius:3px;overflow:hidden;background:var(--surface-3)}
+.stock-bar i{display:block;min-width:2px}
+.stock-bar .aman{background:var(--ok)}
+.stock-bar .menipis{background:var(--warn)}
+.stock-bar .habis{background:var(--danger)}
+.tile.active,.tile.active:hover{background:color-mix(in srgb,var(--violet) 18%,var(--surface));box-shadow:inset 0 0 0 1px var(--violet)}
+.tile.active .k{color:var(--text)}
 
 /* ---------- kartu, toolbar, chip ---------- */
 .card{background:var(--surface);border-radius:var(--r-lg);overflow:hidden}
@@ -198,12 +198,17 @@ input:hover,select:hover,textarea:hover{border-color:var(--faint)}
 input:focus,select:focus,textarea:focus{border-color:var(--violet);box-shadow:0 0 0 3px color-mix(in srgb,var(--violet) 25%,transparent)}
 input::placeholder,textarea::placeholder{color:var(--faint)}
 .toolbar select{width:auto;min-width:150px;flex:0 1 auto;cursor:pointer}
-.chips{display:flex;gap:8px;flex-wrap:wrap;padding:4px 16px 14px}
-.chip{border:1px solid var(--border-strong);background:transparent;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:500;color:var(--text);display:inline-flex;gap:7px;align-items:center;transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease)}
-.chip:hover{background:var(--surface-2)}
-.chip .n{font-size:11px;color:var(--muted)}
-.chip.on{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
-.chip.on .n{color:inherit;opacity:.75}
+.chips{display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:0 16px 12px}
+.chips-label{margin-right:4px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;white-space:nowrap;transition:background 80ms linear,border-color 80ms linear,color 80ms linear}
+.chip:hover{border-color:var(--border-strong);color:var(--text)}
+.chip .n{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.chip svg{width:12px;height:12px;margin-left:-4px}
+/* garis tipis di dasar chip: jumlah barang relatif terhadap kategori terbesar */
+.chip::after{content:"";position:absolute;left:0;bottom:0;width:var(--p,0);height:2px;background:var(--border-strong)}
+.chip.on{background:color-mix(in srgb,var(--violet) 14%,transparent);border-color:color-mix(in srgb,var(--violet) 60%,transparent);color:var(--text)}
+.chip.on .n{color:var(--muted)}
+.chip.on::after{background:var(--violet)}
 .result-line{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:6px 18px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
 .result-line b{color:var(--text)}
 
@@ -213,10 +218,13 @@ table.grid{width:100%;border-collapse:collapse}
 .grid th{text-align:left;font-size:13.5px;font-weight:600;color:var(--text);padding:14px 10px;background:var(--thead);white-space:nowrap;user-select:none}
 .grid th:first-child{padding-left:18px}
 .grid th[data-sort]{cursor:pointer}
-.grid th[data-sort]:hover{color:var(--violet)}
-.grid th .arr{opacity:.45;margin-left:4px;font-size:10px}
-.grid th.sorted .arr{opacity:1;color:var(--violet)}
-.grid td{padding:14px 10px;border-top:1px solid var(--border);vertical-align:top;font-size:13.5px}
+.grid th[data-sort]:hover .arr{opacity:1}
+.grid th .arr{display:inline-block;opacity:.5;margin-left:4px;vertical-align:-2px}
+.grid th .arr svg{width:12px;height:12px}
+.grid th.sorted .arr{opacity:1;color:var(--focus)}
+.grid th.num,.grid td[data-label="Jumlah"]{text-align:right;font-variant-numeric:tabular-nums}
+.grid td[data-label="Stok"].sub{font-variant-numeric:tabular-nums}
+.grid td{padding:12px 10px;border-top:1px solid var(--border);vertical-align:top;font-size:13.5px}
 .grid thead + tbody tr:first-child td{border-top:0}
 .grid td:first-child{padding-left:18px}
 .grid td:last-child{padding-right:12px}
@@ -228,8 +236,8 @@ table.grid{width:100%;border-collapse:collapse}
 .code::before{content:"#"}
 .name{font-weight:500;cursor:pointer;line-height:1.35}
 .name:hover{color:var(--violet);text-decoration:underline;text-underline-offset:3px}
-.cat-pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--surface-2);color:var(--text)}
-.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:999px;border:1px solid var(--border-strong);margin:0 4px 4px 0;white-space:nowrap}
+.cat-pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text)}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:6px;border:1px solid var(--border-strong);margin:0 4px 4px 0}
 /* status: titik + teks berwarna, seperti kolom Status referensi */
 .badge{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;padding:0;white-space:nowrap;color:var(--muted)}
 .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
@@ -240,25 +248,31 @@ table.grid{width:100%;border-collapse:collapse}
 .stock{display:flex;align-items:center;gap:6px}
 .stock b{min-width:32px;text-align:center;font-size:15px;font-weight:600}
 .stock .u{font-size:12px;color:var(--muted)}
-.step{width:28px;height:28px;border-radius:50%;border:1px solid var(--border-strong);background:transparent;display:grid;place-items:center;padding:0;color:var(--muted);transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
+.step{width:28px;height:28px;border-radius:6px;border:1px solid var(--border-strong);background:transparent;display:grid;place-items:center;padding:0;color:var(--muted);transition:background var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
 .step:hover{color:var(--on-violet);background:var(--violet);border-color:var(--violet)}
 .step svg{width:14px;height:14px}
-.meter{position:relative;width:100px;height:6px;border-radius:999px;margin:9px 0 5px;background:var(--surface-3);overflow:hidden;--c:var(--violet)}
+.meter{position:relative;width:100px;height:6px;border-radius:999px;margin:0;flex:1 1 64px;background:var(--surface-3);overflow:hidden;--c:var(--ok)}
 .meter i{display:block;height:100%;border-radius:999px;background:var(--c)}
 .meter::after{content:"";position:absolute;left:calc(50% - 1px);top:0;bottom:0;width:2px;background:var(--surface)}
 .meter.menipis{--c:var(--warn)} .meter.habis{--c:var(--danger)}
-.actions{white-space:nowrap;text-align:right}
+.stock-min{display:flex;align-items:center;gap:8px;max-width:152px;margin-top:8px}
+.stock-min .sub{white-space:nowrap;font-size:12px;font-variant-numeric:tabular-nums}
+.actions{white-space:nowrap;text-align:right;font-size:0}
+@media (hover:hover){
+  .actions .icon-btn{opacity:.6;transition:opacity 80ms linear,background 80ms linear,color 80ms linear}
+  .grid tr:hover .actions .icon-btn,.actions .icon-btn:focus-visible{opacity:1}
+}
 .empty{padding:56px 20px;text-align:center;color:var(--muted)}
 .empty .big{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--violet);color:var(--on-violet);box-shadow:0 0 0 6px var(--violet-ring);display:grid;place-items:center}
 .empty .big svg{width:28px;height:28px}
-.empty h3{color:var(--text);margin:0 0 6px;font-size:18px;font-weight:600}
+.empty h2{color:var(--text);margin:0 0 6px;font-size:18px;font-weight:600}
 .empty p{margin:0 auto;max-width:440px}
 .empty .row{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
 
 /* ---------- proyek & pengaturan ---------- */
-.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:16px;align-items:start}
 .proj{padding:0}
-.proj h3{margin:0;padding:16px 18px 0;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.proj h2{margin:0;padding:16px 18px 0;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .proj .meta{font-size:12.5px;color:var(--muted);margin:2px 18px 12px}
 .proj > .sub{padding:0 18px 18px}
 .proj ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
@@ -267,9 +281,10 @@ table.grid{width:100%;border-collapse:collapse}
 .proj li .code{margin-right:8px}
 .proj li .badge{margin-left:8px}
 .section-head{display:flex;justify-content:flex-end;gap:12px;margin-bottom:14px}
-.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.settings-grid{columns:3 320px;column-gap:16px}
+.settings-grid > .set{break-inside:avoid;margin-bottom:16px}
 .set{padding:20px}
-.set h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.set h2{margin:0 0 4px;font-size:16px;font-weight:600}
 .set p.d{margin:0 0 14px;color:var(--muted);font-size:13px}
 .list{border:1px solid var(--border-strong);border-radius:var(--r);max-height:300px;overflow:auto}
 .list .li{display:flex;align-items:center;gap:4px;padding:4px 6px 4px 12px;font-size:13.5px;border-bottom:1px solid var(--border)}
@@ -347,6 +362,7 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
 
 /* ---------- sentuh & gerak ---------- */
 @media (pointer:coarse){
+  .chips{gap:8px}
   .btn{min-height:44px}
   .btn.sm{min-height:40px}
   .icon-btn{width:44px;height:44px}
@@ -378,7 +394,8 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
   .grid td[data-label="Nama"]{min-width:150px}
 }
 @media (max-width:1100px){
-  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .tile.hero{grid-column:1 / -1}
 }
 @media (max-width:1180px){
   .grid thead{display:none}
@@ -400,28 +417,23 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
   .theme-row > span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .nav{flex:1;flex-direction:row;gap:2px;margin:0}
   .tab{flex:1;flex-direction:column;gap:3px;min-height:56px;padding:6px 2px;font-size:11.5px;justify-content:center;align-items:center;border-radius:var(--r)}
-  .tab[aria-selected="true"]::before{left:30%;right:30%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
   .tab .count{display:none}
   header.top{position:static;padding:14px 16px;min-height:0}
   main{padding:18px 16px calc(100px + env(safe-area-inset-bottom))}
   /* label tetap terbaca screen reader walau disembunyikan secara visual */
-  .top-actions .btn .lbl,.sync .t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .top-actions .btn:not(.accent) .lbl,.sync .t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .top-actions .btn{padding:0 13px}
   #toasts{right:12px;left:12px;bottom:calc(88px + env(safe-area-inset-bottom))}
 }
 @media (max-width:640px){
-  .tiles{gap:10px}
-  .tile{padding:14px;min-height:118px}
-  .tile-top{margin-bottom:10px;gap:8px}
-  .tile-top::after{content:none}
-  .tile .ic{width:30px;height:30px;border-radius:8px}
-  .tile .ic svg{width:16px;height:16px}
-  .tile .v{font-size:26px}
-  .tile .k{font-size:12px}
-  .tile .f{font-size:11.5px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile{padding:12px}
+  .tile .v{font-size:20px}
+  .tile.hero .v{font-size:28px}
   .toolbar{padding:12px 12px 8px}
   .toolbar select{flex:1 1 calc(50% - 5px);min-width:0}
-  .chips{padding:4px 12px 12px;flex-wrap:nowrap;overflow-x:auto}
+  .chips{padding:0 12px 12px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
+  .chips-label{display:none}
   .chip{flex:none}
   .grid tr{padding:14px 12px}
   .form-grid{grid-template-columns:1fr 1fr}
@@ -490,7 +502,7 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
         </select>
         <select id="fProj" aria-label="Filter proyek"></select>
       </div>
-      <div class="chips" id="catChips"></div>
+      <div class="chips" id="catChips" role="group" aria-label="Filter kategori"></div>
       <div id="itemsBody"></div>
     </div>
     <div class="backup-bar" id="backupBar"></div>
@@ -521,22 +533,22 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
   <section class="view" id="view-settings">
     <div class="settings-grid">
       <div class="card set">
-        <h3>Kategori</h3><p class="d">Kode barang dibuat otomatis dari kategori (mis. MCU-001).</p>
+        <h2>Kategori</h2><p class="d">Kode barang dibuat otomatis dari kategori (mis. MCU-001).</p>
         <div class="list" id="catList"></div>
         <div class="add-row"><input type="text" id="newCat" placeholder="Kategori baru"><button class="btn" id="addCatBtn">Tambah</button></div>
       </div>
       <div class="card set">
-        <h3>Lokasi penyimpanan</h3><p class="d">Rak, laci, kotak organizer, dsb. Ganti nama akan memperbarui semua barang.</p>
+        <h2>Lokasi penyimpanan</h2><p class="d">Rak, laci, kotak organizer, dsb. Ganti nama akan memperbarui semua barang.</p>
         <div class="list" id="locList"></div>
         <div class="add-row"><input type="text" id="newLoc" placeholder="mis. Rak A / Laci 2"><button class="btn" id="addLocBtn">Tambah</button></div>
       </div>
       <div class="card set">
-        <h3>Proyek</h3><p class="d">Ganti nama proyek akan memperbarui barang dan riwayat.</p>
+        <h2>Proyek</h2><p class="d">Ganti nama proyek akan memperbarui barang dan riwayat.</p>
         <div class="list" id="projList"></div>
         <div class="add-row"><input type="text" id="newProj" placeholder="Nama proyek"><button class="btn" id="addProjBtn2">Tambah</button></div>
       </div>
       <div class="card set">
-        <h3>Data &amp; backup</h3>
+        <h2>Data &amp; backup</h2>
         <p class="d" id="setDataDesc"></p>
         <div class="btn-col">
           <button class="btn" id="backupBtn"><span class="ft json">JSON</span>Backup lengkap (.json)</button>
@@ -549,7 +561,7 @@ dialog::backdrop{background:rgba(0,0,0,.65);backdrop-filter:blur(3px)}
         <div class="note" id="dataInfo"></div>
       </div>
       <div class="card set" id="gdCard" hidden>
-        <h3>Auto backup Google Drive</h3>
+        <h2>Auto backup Google Drive</h2>
         <p class="d" id="gdDesc"></p>
         <div class="btn-col" id="gdActions">
           <button class="btn primary" id="gdBackupBtn"><span data-i="cloud"></span><span class="t">Backup ke Drive sekarang</span></button>
@@ -700,6 +712,7 @@ const ICONS = {
   layers:'<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/>',
   empty:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  sort:'<path d="m8 10 4-4 4 4M8 14l4 4 4-4"/>', sortUp:'<path d="m7 14 5-5 5 5"/>', sortDown:'<path d="m7 10 5 5 5-5"/>',
   cloud:'<path d="M7 18a5 5 0 0 1-.5-9.97A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/><path d="M12 11v6m0-6-2.5 2.5M12 11l2.5 2.5"/>'
 };
 const PAGE_INFO = {
@@ -925,15 +938,24 @@ function renderStats() {
   const it = state.items;
   const low = it.filter(i => statusOf(i) === 'menipis').length, out = it.filter(i => statusOf(i) === 'habis').length;
   const cats = new Set(it.map(i => i.category)).size, locs = new Set(it.map(i => i.location).filter(Boolean)).size;
+  const need = low + out, safe = it.length - need;
+  const seg = (cls, n) => n ? `<i class="${cls}" style="flex-grow:${n}"></i>` : '';
   const tiles = [
-    {k:'Jenis barang', v:it.length, f:`${cats} kategori`, act:'all', cls:'hero', ic:'box'},
-    {k:'Total unit', v:it.reduce((s,i) => s + i.qty, 0), f:`di ${locs} lokasi`, act:'all', cls:'', ic:'layers'},
-    {k:'Stok menipis', v:low, f:'≤ stok minimum', act:'menipis', cls:'warn', ic:'alert', active: ui.status==='menipis', p: it.length ? low / it.length * 100 : 0},
-    {k:'Habis', v:out, f:'Stok 0, perlu dibeli', act:'habis', cls:'danger', ic:'empty', active: ui.status==='habis', p: it.length ? out / it.length * 100 : 0}
+    {k:'Stok menipis', v:low, f:'≤ stok minimum', act:'menipis', cls:'warn', dot:true},
+    {k:'Habis', v:out, f:'Stok 0, perlu dibeli', act:'habis', cls:'danger', dot:true},
+    {k:'Jenis barang', v:it.length, f:`${cats} kategori`, act:'all', cls:''},
+    {k:'Total unit', v:it.reduce((s,i) => s + i.qty, 0), f:`di ${locs} lokasi`, act:'all', cls:''}
   ];
-  $('#stats').innerHTML = tiles.map(t => `<button class="tile ${t.cls} ${t.v?'':'zero'} ${t.active?'active':''}" data-stat="${t.act}" aria-pressed="${!!t.active}">
-    <span class="tile-top"><span class="ic">${icon(t.ic)}</span><span class="k">${t.k}</span></span><span class="v">${fmtNum(t.v)}</span><span class="f">${t.f}</span>${t.p == null ? '' : `<span class="share" title="${Math.round(t.p)}% dari semua barang"><i style="width:${t.p}%"></i></span>`}</button>`).join('');
-  const need = low + out;
+  const heroAct = need ? 'restock' : 'all';
+  const heroNote = !it.length ? 'Belum ada barang' : need ? `${safe} jenis lainnya aman` : 'Semua stok aman';
+  $('#stats').innerHTML = `<button class="tile hero ${need?'':'zero'} ${ui.status==='restock'?'active':''}" data-stat="${heroAct}" ${need ? `aria-pressed="${ui.status==='restock'}" title="Tampilkan barang yang perlu restock"` : ''}>
+    <span class="k">Perlu restock</span><span class="v">${fmtNum(need)}<small>dari ${fmtNum(it.length)} jenis</small></span>
+    <span class="stock-bar" role="img" aria-label="${safe} aman, ${low} menipis, ${out} habis">${seg('aman', safe)}${seg('menipis', low)}${seg('habis', out)}</span>
+    <span class="f">${heroNote}</span></button>` + tiles.map(t => {
+    const filter = t.act !== 'all', on = filter && ui.status === t.act;
+    return `<button class="tile ${t.cls} ${t.v?'':'zero'} ${on?'active':''}" data-stat="${t.act}" ${filter ? `aria-pressed="${on}" title="Filter tabel: ${t.k.toLowerCase()}"` : 'title="Tampilkan semua barang"'}>
+    <span class="k">${t.dot ? '<i></i>' : ''}${t.k}</span><span class="v">${fmtNum(t.v)}</span><span class="f">${t.f}</span></button>`;
+  }).join('');
   $('#restockCard').innerHTML = need
     ? `<span class="rc-k">Perlu restock</span><span class="rc-v">${need}<small>barang</small></span><button class="btn accent sm" data-act="restock"><span class="lbl-txt">Lihat daftar</span>${icon('arrow')}</button>`
     : `<span class="rc-k">Status stok</span><span class="rc-v ok">Semua aman</span>`;
@@ -955,21 +977,22 @@ function renderFilters() {
 function renderChips() {
   const counts = {};
   state.items.forEach(i => counts[i.category] = (counts[i.category]||0) + 1);
-  const used = allCategories().filter(c => counts[c]);
+  const used = allCategories().filter(c => counts[c]).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b, 'id'));
+  const max = Math.max(1, ...used.map(c => counts[c]));
   if (ui.cat && !counts[ui.cat]) ui.cat = '';
   $('#catChips').style.display = state.items.length ? '' : 'none';
-  $('#catChips').innerHTML = `<button class="chip ${!ui.cat?'on':''}" data-cat="">Semua <span class="n">${state.items.length}</span></button>` +
-    used.map(c => `<button class="chip ${ui.cat===c?'on':''}" data-cat="${esc(c)}">${esc(c)} <span class="n">${counts[c]}</span></button>`).join('');
+  $('#catChips').innerHTML = `<span class="chips-label" aria-hidden="true">Kategori</span><button class="chip ${!ui.cat?'on':''}" data-cat="" aria-pressed="${!ui.cat}">Semua <span class="n">${state.items.length}</span></button>` +
+    used.map(c => `<button class="chip ${ui.cat===c?'on':''}" data-cat="${esc(c)}" aria-pressed="${ui.cat===c}" style="--p:${counts[c] / max * 100}%">${esc(c)} <span class="n">${counts[c]}</span>${ui.cat===c ? icon('x') : ''}</button>`).join('');
 }
 
 function sortTh(key, label) {
   const on = ui.sort.key === key;
-  return `<th data-sort="${key}" class="${on?'sorted':''}">${label}<span class="arr">${on ? (ui.sort.dir > 0 ? '▲' : '▼') : '↕'}</span></th>`;
+  return `<th data-sort="${key}" class="${on?'sorted':''}" aria-sort="${on ? (ui.sort.dir > 0 ? 'ascending' : 'descending') : 'none'}">${label}<span class="arr">${icon(on ? (ui.sort.dir > 0 ? 'sortUp' : 'sortDown') : 'sort')}</span></th>`;
 }
 function renderItems() {
   const body = $('#itemsBody');
   if (!state.items.length) {
-    body.innerHTML = `<div class="empty"><div class="big">${icon('chip')}</div><h3>Inventaris masih kosong</h3>
+    body.innerHTML = `<div class="empty"><div class="big">${icon('chip')}</div><h2>Inventaris masih kosong</h2>
       <p>Mulai catat komponen dan mikrokontroler Anda, atau coba dulu dengan data contoh.</p>
       <div class="row"><button class="btn primary" data-act="new">${icon('plus')}Tambah barang pertama</button>
       <button class="btn" data-act="sample">${icon('sparkle')}Muat data contoh</button>
@@ -984,7 +1007,7 @@ function renderItems() {
   let html = `<div class="result-line"><span>Menampilkan <b>${rows.length}</b> dari ${state.items.length} barang · ${fmtNum(totalUnits)} unit</span>
     ${filtersOn ? `<button class="btn sm ghost" data-act="clearf">${icon('x')}Reset filter</button>` : ''}</div>`;
   if (!rows.length) {
-    body.innerHTML = html + `<div class="empty"><h3>Tidak ada barang yang cocok</h3><p>Coba kata kunci lain atau reset filter.</p></div>`;
+    body.innerHTML = html + `<div class="empty"><h2>Tidak ada barang yang cocok</h2><p>Coba kata kunci lain atau reset filter.</p></div>`;
     return;
   }
   html += `<div class="table-wrap"><table class="grid"><thead><tr>
@@ -1003,7 +1026,7 @@ function renderItems() {
           <button class="step" data-act="dec" title="Kurangi 1" aria-label="Kurangi 1">${icon('minus')}</button>
           <b>${fmtNum(it.qty)}</b>
           <button class="step" data-act="inc" title="Tambah 1" aria-label="Tambah 1">${icon('plus')}</button><span class="u">${esc(it.unit)}</span></div>
-        ${it.minStock ? `<div class="meter ${st}" title="Garis tengah = stok minimum"><i style="width:${Math.min(100, it.qty / (it.minStock * 2) * 100)}%"></i></div><div class="sub mono">min ${fmtNum(it.minStock)}</div>` : ''}</div></td>
+        ${it.minStock ? `<div class="stock-min"><div class="meter ${st}" title="Garis tengah = stok minimum"><i style="width:${Math.min(100, it.qty / (it.minStock * 2) * 100)}%"></i></div><div class="sub">min ${fmtNum(it.minStock)}</div></div>` : ''}</div></td>
       <td data-label="Status"><span class="badge ${st}">${STATUS_LABEL[st]}</span></td>
       <td data-label="Proyek"><div>${it.projects.map(p => `<span class="tag">${esc(p)}</span>`).join('') || '<span class="sub">—</span>'}</div></td>
       <td class="actions">
@@ -1053,17 +1076,17 @@ function logRowsHtml(logs, withItem = true) {
 }
 function renderLogs() {
   const logs = filteredLogs();
-  if (!state.logs.length) { $('#logsBody').innerHTML = `<div class="empty"><h3>Belum ada riwayat</h3><p>Riwayat akan terisi saat Anda menambah barang atau mengubah stok.</p></div>`; return; }
+  if (!state.logs.length) { $('#logsBody').innerHTML = `<div class="empty"><h2>Belum ada riwayat</h2><p>Riwayat akan terisi saat Anda menambah barang atau mengubah stok.</p></div>`; return; }
   const shown = logs.slice(0, 500);
   $('#logsBody').innerHTML = `<div class="result-line"><span>${logs.length} catatan${logs.length > 500 ? ' · menampilkan 500 terbaru (semua ikut diekspor ke Excel)' : ''}</span></div>
-    <div class="table-wrap"><table class="grid"><thead><tr><th>Waktu</th><th>Barang</th><th>Jenis</th><th>Jumlah</th><th>Stok</th><th>Proyek</th><th>Catatan</th></tr></thead>
+    <div class="table-wrap"><table class="grid"><thead><tr><th>Waktu</th><th>Barang</th><th>Jenis</th><th class="num">Jumlah</th><th>Stok</th><th>Proyek</th><th>Catatan</th></tr></thead>
     <tbody>${logRowsHtml(shown)}</tbody></table></div>`;
 }
 
 function renderProjects() {
   const projs = allProjects();
   if (!projs.length) {
-    $('#projBody').innerHTML = `<div class="card"><div class="empty"><div class="big">${icon('folder')}</div><h3>Belum ada proyek</h3>
+    $('#projBody').innerHTML = `<div class="card"><div class="empty"><div class="big">${icon('folder')}</div><h2>Belum ada proyek</h2>
       <p>Tandai barang dengan nama proyek di form barang, atau catat pengambilan stok “untuk proyek”.</p></div></div>`;
     return;
   }
@@ -1084,7 +1107,7 @@ function renderProjects() {
       return `<li><span><span class="code">${esc(code)}</span> ${esc(name)}</span>
         <span class="sub" style="white-space:nowrap">${u && u.qty > 0 ? `terpakai ${fmtNum(u.qty)} · ` : ''}${it ? `stok ${fmtNum(it.qty)} <span class="badge ${statusOf(it)}">${STATUS_LABEL[statusOf(it)]}</span>` : ''}</span></li>`;
     }).join('');
-    return `<div class="card proj"><h3>${esc(p)} <button class="btn sm ghost" data-filter-proj="${esc(p)}">Lihat barang</button></h3>
+    return `<div class="card proj"><h2>${esc(p)} <button class="btn sm ghost" data-filter-proj="${esc(p)}">Lihat barang</button></h2>
       <div class="meta">${ids.length} jenis komponen · ${fmtNum(totalUsed)} unit terpakai</div>
       ${lines ? `<ul>${lines}</ul>` : '<div class="sub">Belum ada komponen.</div>'}</div>`;
   }).join('')}</div>`;
@@ -1737,13 +1760,19 @@ function init() {
   $('#fLoc').onchange = (e) => { ui.loc = e.target.value; render(); };
   $('#fStatus').onchange = (e) => { ui.status = e.target.value; render(); };
   $('#fProj').onchange = (e) => { ui.proj = e.target.value; render(); };
-  $('#catChips').onclick = (e) => { const c = e.target.closest('[data-cat]'); if (c) { ui.cat = c.dataset.cat; render(); } };
+  $('#catChips').onclick = (e) => {
+    const c = e.target.closest('[data-cat]'); if (!c) return;
+    const v = c.dataset.cat;
+    ui.cat = ui.cat === v ? '' : v; render();
+    $(`#catChips [data-cat="${CSS.escape(v)}"]`)?.focus();
+  };
   $('#stats').onclick = (e) => {
     const s = e.target.closest('[data-stat]'); if (!s) return;
-    const a = s.dataset.stat;
+    const a = s.dataset.stat, at = [...s.parentNode.children].indexOf(s);
     if (a === 'projects') return setTab('projects');
-    if (a === 'all') return clearFilters();
-    ui.status = ui.status === a ? '' : a; render();
+    if (a === 'all') clearFilters();
+    else { ui.status = ui.status === a ? '' : a; render(); }
+    $('#stats').children[at]?.focus();
   };
 
   // tabel barang (delegasi)
