@@ -8,6 +8,8 @@ Aplikasi web untuk mencatat komponen elektronik dan mikrokontroler: stok, lokasi
 - Lokasi rak / laci / kotak + slot
 - Stok minimum dengan status **Aman / Menipis / Habis**
 - Stok masuk/keluar per proyek, tombol −/+ cepat, dan riwayat lengkap
+- Tombol Urungkan setelah ubah stok atau hapus; barang terhapus masuk Sampah dan bisa dipulihkan
+- Daftar per halaman (25 barang), judul kolom menempel saat digulir, dan validasi formulir di dekat isian
 - Halaman proyek: komponen yang dialokasikan dan jumlah yang sudah terpakai
 - Pencarian, filter (kategori, lokasi, status, proyek), dan pengurutan
 - Ekspor **Excel** (inventaris, perlu restock, ringkasan, riwayat), **PDF** (laporan + daftar belanja), **Word (.docx)**
